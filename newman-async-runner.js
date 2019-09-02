@@ -104,7 +104,7 @@ module.exports = {
 		        }
 		    };
 		    if (this.options.specific_collection_items_to_run && !this.options.specific_collection_items_to_run.includes(_folder)) { return; }
-		    if (this.options.parallelFolderRuns == false) { delete options.folder; }
+		    if (this.options.parallelFolderRuns == false && !this.options.specific_collection_items_to_run) { delete options.folder; }
 		    if (!_data) { delete options.iterationData; }
 
 		    this.collectionRuns.push(function (done) {
@@ -134,11 +134,9 @@ module.exports = {
 		    await this.setupFolders();
 		    await this.setupCollections();
 		    let self = this;
-		    await async.parallel(this.collectionRuns, function(){
+		    await async.parallel(this.collectionRuns, function (err, results){
 		    	self.annonymizeReportsPassword();
 		    });
 		}		
-
 	}	
 };
-
