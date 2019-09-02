@@ -1,0 +1,1 @@
+![](https://raw.githubusercontent.com/dawiddiwad/newman-async-runner/master/example.png)

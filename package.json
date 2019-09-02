@@ -1,0 +1,30 @@
+{
+  "name": "newman-async-runner",
+  "description": "ASYNCHRONOUS NEWMAN TEST RUNNER",
+  "version": "1.0.2",
+  "maintainers": [
+    {
+      "name": "Dawid Dobrowolski",
+      "email": "dawid89dobrowolski@gmail.com",
+      "web": "http://pisior.herokuapp.com/"
+    }
+  ],
+  "dependencies": {
+    "async": "*",
+    "newman": "*",
+    "newman-reporter-htmlfull": "github:dawiddiwad/newman-reporter-htmlfull#master"
+  },
+  "repository": [
+    {
+      "type": "git",
+      "url": "https://github.com/dawiddiwad/newman-async-runner.git"
+    }
+  ],
+  "license": [
+    {
+      "name": "MIT",
+      "url": "https://raw.githubusercontent.com/dawiddiwad/newman-async-runner/master/LICENSE"
+    }
+  ],
+  "main": "newman-async-runner.js"
+}
