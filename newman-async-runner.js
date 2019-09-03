@@ -64,7 +64,7 @@ module.exports = {
 		async annonymizeReportsPassword(){
 		    this.removePassword = async function(file){
 		        let result = await fs.readFileSync(file, 'utf8');
-		        result = result.replace(/&lt;n1:password&gt;[^n1:]*/g, '&lt;n1:password&gt;***&lt;/');
+		        result = result.replace(/(?<=&lt;n1:password&gt;)(.*?)(?=&lt;\/n1:password&gt;)/g, '***');
 		            if(await fs.writeFileSync(file, result, 'utf8')){
 						console.log('removed password from: ' + file);
 					}
