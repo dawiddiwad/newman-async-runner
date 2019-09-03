@@ -1,19 +1,25 @@
-let assert = require('assert');
-let ziom = require('../newman-async-runner');
+describe('newman-async-runner tests',  function(){
+    let 
+        assert,
+        ziom,
+        runnerOptions;
+    
+    before(function(){
+        assert = require('assert');
+        ziom = require('../newman-async-runner'); 
 
-runnerOptions = {
-    parallelFolderRuns: false,                                  
-    folders: {
-        collections:'./test/collections/',                        
-        environments: './test/environments/',                       
-        reports: './test/reports/',                                 
-        data: './test/data/',                                        
-        templates: './test/templates/'},                             
-    reporter_template: 'htmlreqres.hbs',                        
-    specific_collection_items_to_run: ['folder1 Copy', 'LUZEM']    
-};
-
-describe('NewmanRunner()',  function(){
+        runnerOptions = {
+            parallelFolderRuns: false,                                  
+            folders: {
+                collections:'./test/collections/',                        
+                environments: './test/environments/',                       
+                reports: './test/reports/',                                 
+                data: './test/data/',                                        
+                templates: './test/templates/'},                             
+            reporter_template: 'htmlreqres.hbs',                        
+            specific_collection_items_to_run: ['folder1 Copy', 'LUZEM']    
+        };
+    })
     describe('#setupFolders()',  function(){
         let directory;
         before(async function(){
@@ -107,7 +113,6 @@ describe('NewmanRunner()',  function(){
             assert.equal(environmentObjects[0].name, 'UAT');
             assert.equal(environmentObjects[1].name, 'UAT');
         })
-        //123DuP@321
     })
     describe('#annonymizeReportsPassword()', function(){
         let reportFiles = new Array();
