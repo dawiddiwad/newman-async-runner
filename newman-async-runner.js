@@ -61,27 +61,22 @@ module.exports = {
 		    return environmentObjects;
 		}	
 
-		annonymizeReportsPassword(){
-		    this.removePassword = function(file){
-		        fs.readFile(file, 'utf8', function (err, data) {
-		        if (err) {
-		            return console.log(err);
+		async annonymizeReportsPassword(){
+		    this.removePassword = async function(file){
+		        let result = await fs.readFileSync(file, 'utf8');
+		        result = result.replace(/&lt;n1:password&gt;[^n1:]*/g, '&lt;n1:password&gt;***&lt;/');
+		            if(await fs.writeFileSync(file, result, 'utf8')){
+						console.log('removed password from: ' + file);
+					}
 		        }
-		        let result = data.replace(/&lt;n1:password&gt;[^n1:]*/g, '&lt;n1:password&gt;***&lt;/');
-		            fs.writeFile(file, result, 'utf8', function (err) {
-		                if (err) return console.log(err) 
-		                else  console.log('removed password from: ' + file);
-		            });
-		        });
-		}  
 
-		fs.readdirSync(this.options.folders.reports)
-		    .filter(function(e){
-		        return path.extname(e).toLowerCase() === '.html';
-		    })
-		    .forEach(file => {
-		        this.removePassword(this.options.folders.reports + file);
-		    })
+			let readFiles = await fs.readdirSync(this.options.folders.reports);
+			readFiles.filter(function(e){
+					return path.extname(e).toLowerCase() === '.html';
+				})
+				.forEach(file => {
+					this.removePassword(this.options.folders.reports + file);
+				})
 		}
 
 		async prepareRunOptions(_collection, _environment, _folder, _data){
