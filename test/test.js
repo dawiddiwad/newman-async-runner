@@ -135,15 +135,133 @@ describe('newman-async-runner tests',  function(){
                 await fs.rmdirSync(runnerOptions.folders.reports);
             } catch{}
         })
-        it('should not contain password', function(){
+        it('removes password', function(){
             for (file of reportFiles){
                 assert.equal(file.includes('123DuP@321'), false);
             }
         })
-        it('should contain *** in place of password', function(){
+        it('puts *** in place of password', function(){
             for (file of reportFiles){
                 assert.equal(file.includes('***'), true);
             }
+        })
+    })
+    describe('#prepareRunOptions()', function(){
+        let
+            collection = new Object(),
+            environment = new Object(),
+            folder,
+            data,
+            result,
+            runnerOptions_copy,
+            nar;
+
+        let prepareRunOptionsFor_iterateAllFolders = function(collection, environment, folders, data){
+            nar = new _nar.NewmanRunner(runnerOptions_copy);
+            for (folder of folders){
+                nar.prepareRunOptions(collection, environment, folder, data);
+            }
+        }    
+        before(function(){
+            runnerOptions_copy = runnerOptions;
+
+            collection.address = './test/test - abcd.json';
+            collection.content = 'test content';
+            collection.name = 'test - abcd';
+            collection.folders = ['folder 1', 'folder 2', 'folder 3'];
+
+            environment.address = './test/test - abcd.json';
+            environment.name = 'test - abcd';
+
+            data = 'test data.csv';
+        })
+        it('based on spcified folders', function(){
+            runnerOptions_copy.specific_collection_items_to_run = [collection.folders[0]];
+            nar = new _nar.NewmanRunner(runnerOptions_copy);
+            prepareRunOptionsFor_iterateAllFolders(collection, environment, collection.folders, data);
+            assert.equal(nar.collectionRuns.length, 1);
+
+            runnerOptions_copy.specific_collection_items_to_run = [collection.folders[0], collection.folders[2]];
+            nar = new _nar.NewmanRunner(runnerOptions_copy);
+            prepareRunOptionsFor_iterateAllFolders(collection, environment, collection.folders, data);
+            assert.equal(nar.collectionRuns.length, 2);
+        })
+        it('with parallel folder runs count', function(){
+            runnerOptions_copy.specific_collection_items_to_run = [collection.folders[0], collection.folders[2]];
+            runnerOptions_copy.parallelFolderRuns = true; 
+            prepareRunOptionsFor_iterateAllFolders(collection, environment, collection.folders, data);
+            assert.equal(nar.collectionRuns.length, 2);
+
+            runnerOptions_copy.specific_collection_items_to_run = [collection.folders[0], collection.folders[2]];
+            runnerOptions_copy.parallelFolderRuns = false; 
+            prepareRunOptionsFor_iterateAllFolders(collection, environment, collection.folders, data);
+            assert.equal(nar.collectionRuns.length, 2);
+
+            delete runnerOptions_copy.specific_collection_items_to_run;
+            runnerOptions_copy.parallelFolderRuns = true; 
+            prepareRunOptionsFor_iterateAllFolders(collection, environment, collection.folders, data);
+            assert.equal(nar.collectionRuns.length, 3);
+
+            delete runnerOptions_copy.specific_collection_items_to_run;
+            runnerOptions_copy.parallelFolderRuns = false; 
+            prepareRunOptionsFor_iterateAllFolders(collection, environment, collection.folders, data);
+            assert.equal(nar.collectionRuns.length, 3);
+
+            delete runnerOptions_copy.specific_collection_items_to_run;
+            runnerOptions_copy.parallelFolderRuns = false; 
+            nar = new _nar.NewmanRunner(runnerOptions_copy);
+            nar.prepareRunOptions(collection, environment, 'all_folders', data);
+            assert.equal(nar.collectionRuns.length, 1);
+        })
+        it('puts correct data for whole collections runs', async function(){
+            runnerOptions_copy = runnerOptions;
+            runnerOptions_copy.folders.data = './data to test/'
+            collection.address = './test/test - abcd.json';
+            collection.content = 'test content';
+            collection.name = 'test - abcd';
+            collection.folders = ['folder 1', 'folder 2', 'folder 3'];
+            environment.address = './test/test - abcd.json';
+            environment.name = 'test - abcd';
+            data = 'test data.csv';
+
+            _narMock = _nar;
+            _narMock.newman.run = function(options){
+                assert.equal(options.collection, './test/test - abcd.json');
+                assert.equal(options.environment, './test/test - abcd.json');
+                assert.equal(options.folder, undefined);
+                assert.equal(options.iterationData, './data to test/' + 'test data.csv');
+            }
+            delete runnerOptions_copy.specific_collection_items_to_run;
+            runnerOptions_copy.parallelFolderRuns = false; 
+            nar = new _narMock.NewmanRunner(runnerOptions_copy);
+            nar.prepareRunOptions(collection, environment, 'folder 2', data);
+            await async.parallel(nar.collectionRuns, function (err, results){
+		    });
+        })
+        it('puts correct data for folder runs', async function(){
+            runnerOptions_copy = runnerOptions;
+            runnerOptions_copy.folders.data = './data to test/'
+            collection.address = './test/test - abcd.json';
+            collection.content = 'test content';
+            collection.name = 'test - abcd';
+            collection.folders = ['folder 1', 'folder 2', 'folder 3'];
+            environment.address = './test/test - abcd.json';
+            environment.name = 'test - abcd';
+            data = 'test data.csv';
+
+            _narMock = _nar;
+            _narMock.newman.run = function(options){
+                assert.equal(options.collection, './test/test - abcd.json');
+                assert.equal(options.environment, './test/test - abcd.json');
+                assert.equal(options.folder, 'folder 2');
+                assert.equal(options.iterationData, './data to test/' + 'test data.csv');
+            }
+            runnerOptions_copy.specific_collection_items_to_run = ['folder 2'];
+            runnerOptions_copy.parallelFolderRuns = false; 
+            nar = new _narMock.NewmanRunner(runnerOptions_copy);
+            nar.prepareRunOptions(collection, environment, 'folder 2', data);
+            await async.parallel(nar.collectionRuns, function (err, results){
+		    });
         })
     })
 })
