@@ -100,7 +100,7 @@ module.exports = {
 		    };
 		    if (this.options.specific_collection_items_to_run && !this.options.specific_collection_items_to_run.includes(_folder)) { return; }
 		    if (this.options.parallelFolderRuns == false && !this.options.specific_collection_items_to_run) { delete options.folder; }
-		    if (!_data) { delete options.iterationData; }
+		    if (!_data[0]) { delete options.iterationData; }
 
 		    this.collectionRuns.push(function (done) {
 		    	newman.run(options, done);

@@ -5,6 +5,7 @@ describe('newman-async-runner tests',  function(){
         runnerOptions;
     
     before(function(){
+        this.timeout(10000);
         assert = require('assert');
         _nar = require('../newman-async-runner'); 
 
@@ -255,6 +256,31 @@ describe('newman-async-runner tests',  function(){
                 assert.equal(options.environment, './test/test - abcd.json');
                 assert.equal(options.folder, 'folder 2');
                 assert.equal(options.iterationData, './data to test/' + 'test data.csv');
+            }
+            runnerOptions_copy.specific_collection_items_to_run = ['folder 2'];
+            runnerOptions_copy.parallelFolderRuns = false; 
+            nar = new _narMock.NewmanRunner(runnerOptions_copy);
+            nar.prepareRunOptions(collection, environment, 'folder 2', data);
+            await async.parallel(nar.collectionRuns, function (err, results){
+		    });
+        })
+        it('puts correct data for data runs', async function(){
+            runnerOptions_copy = runnerOptions;
+            runnerOptions_copy.folders.data = './data to test/'
+            collection.address = './test/test - abcd.json';
+            collection.content = 'test content';
+            collection.name = 'test - abcd';
+            collection.folders = ['folder 1', 'folder 2', 'folder 3'];
+            environment.address = './test/test - abcd.json';
+            environment.name = 'test - abcd';
+            data = [undefined];
+
+            _narMock = _nar;
+            _narMock.newman.run = function(options){
+                assert.equal(options.collection, './test/test - abcd.json');
+                assert.equal(options.environment, './test/test - abcd.json');
+                assert.equal(options.folder, 'folder 2');
+                assert.equal(options.iterationData, undefined);
             }
             runnerOptions_copy.specific_collection_items_to_run = ['folder 2'];
             runnerOptions_copy.parallelFolderRuns = false; 
