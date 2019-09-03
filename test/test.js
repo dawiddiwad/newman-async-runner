@@ -1,12 +1,12 @@
 describe('newman-async-runner tests',  function(){
     let 
         assert,
-        ziom,
+        _nar,
         runnerOptions;
     
     before(function(){
         assert = require('assert');
-        ziom = require('../newman-async-runner'); 
+        _nar = require('../newman-async-runner'); 
 
         runnerOptions = {
             parallelFolderRuns: false,                                  
@@ -23,7 +23,7 @@ describe('newman-async-runner tests',  function(){
     describe('#setupFolders()',  function(){
         let directory;
         before(async function(){
-            await new ziom.NewmanRunner(runnerOptions).setupFolders();
+            await new _nar.NewmanRunner(runnerOptions).setupFolders();
             directory = await fs.readdirSync('./test/');
         })
         after(async function(){
@@ -49,13 +49,13 @@ describe('newman-async-runner tests',  function(){
     })
     describe('#getCollections()', function(){
         let collectionObjects;
-        beforeEach(async function(){
+        before(async function(){
             await fs.mkdirSync(runnerOptions.folders.collections, {recursive: true});
             await fs.copyFileSync('./test/testdata/collections/yolo.postman_collection.json', './test/collections/yolo.postman_collection.json');
             await fs.copyFileSync('./test/testdata/collections/yolo.postman_collection.json', './test/collections/yolo.postman_collection2.json');
-            collectionObjects = await new ziom.NewmanRunner(runnerOptions).getCollections();
+            collectionObjects = await new _nar.NewmanRunner(runnerOptions).getCollections();
         })
-        afterEach(async function(){
+        after(async function(){
             try{
                 await fs.unlinkSync('./test/collections/yolo.postman_collection.json')
                 await fs.unlinkSync('./test/collections/yolo.postman_collection2.json')
@@ -89,13 +89,13 @@ describe('newman-async-runner tests',  function(){
     })
     describe('#getEnvironments()', function(){
         let environmentObjects;
-        beforeEach(async function(){
+        before(async function(){
             await fs.mkdirSync(runnerOptions.folders.environments, {recursive: true});
             await fs.copyFileSync('./test/testdata/environments/UAT.postman_environment.json', './test/environments/UAT.postman_environment.json');
             await fs.copyFileSync('./test/testdata/environments/UAT.postman_environment.json', './test/environments/UAT.postman_environment2.json');
-            environmentObjects = await new ziom.NewmanRunner(runnerOptions).getEnvironments();
+            environmentObjects = await new _nar.NewmanRunner(runnerOptions).getEnvironments();
         })
-        afterEach(async function(){
+        after(async function(){
             try{
                 await fs.unlinkSync('./test/environments/UAT.postman_environment.json')
                 await fs.unlinkSync('./test/environments/UAT.postman_environment2.json')
@@ -116,17 +116,17 @@ describe('newman-async-runner tests',  function(){
     })
     describe('#annonymizeReportsPassword()', function(){
         let reportFiles = new Array();
-        beforeEach(async function(){
+        before(async function(){
             await fs.mkdirSync(runnerOptions.folders.reports, {recursive: true});
             await fs.copyFileSync('./test/testdata/reports/snippets-UAT-all_folders.html', './test/reports/snippets-UAT-all_folders.html');
             await fs.copyFileSync('./test/testdata/reports/snippets-UAT-all_folders.html', './test/reports/snippets-UAT-all_folders2.html');
-            await new ziom.NewmanRunner(runnerOptions).annonymizeReportsPassword();
+            await new _nar.NewmanRunner(runnerOptions).annonymizeReportsPassword();
             let reportsDirFiles = await fs.readdirSync('./test/reports/', 'utf8');
             for (file of reportsDirFiles){
                 reportFiles.push(await fs.readFileSync('./test/reports/' + file, 'utf8'));
             }
         })
-        afterEach(async function(){
+        after(async function(){
             try{
                 let reportsDirFiles = await fs.readdirSync('./test/reports/', 'utf8');
                 for (file of reportsDirFiles){
