@@ -169,6 +169,16 @@ describe('newman-async-runner tests',  function(){
             assert.equal(file.includes('lt;n1:password&gt'), false);
             assert.equal(file.includes('lt;n1:***&gt'), true);
         })
+        it('does not anonymize report when requeired', async function(){
+            let runnerOptions_copy = runnerOptions;
+            runnerOptions_copy.anonymizeFilter = /(?<=&lt;n1:)(.*?)*(?=&gt;)/g;
+            delete runnerOptions_copy.anonymizeFilter;
+            await fs.copyFileSync('./test/testdata/reports/snippets-UAT-all_folders.html', './test/reports/snippets-UAT-all_folders3.html');
+            await new _nar.NewmanRunner(runnerOptions_copy).anonymizeReportsPassword();
+            let file = await fs.readFileSync('./test/reports/snippets-UAT-all_folders3.html', 'utf8')
+
+            assert.equal(file.includes('123DuP@321'), true);
+        })
     })
     describe('#prepareRunOptions()', function(){
         let
