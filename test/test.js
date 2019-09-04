@@ -9,6 +9,10 @@ describe('newman-async-runner tests',  function(){
         assert = require('assert');
         _nar = require('../newman-async-runner'); 
 
+        console.log = function(){
+            return;
+        }
+
         runnerOptions = {
             parallelFolderRuns: false,                                  
             folders: {
@@ -106,6 +110,12 @@ describe('newman-async-runner tests',  function(){
         it('should generate environments', async function(){    
             assert.equal(environmentObjects.length, 2);        
         })
+        it('should return undefined array if no environments path is specified', async function(){
+            copyOptions = runnerOptions;
+            delete copyOptions.folders.environments;
+            let returnEnvironments = await new _nar.NewmanRunner(copyOptions).getEnvironments();
+            assert.deepEqual(returnEnvironments, [undefined]);
+        })
         it('environment has address', async function(){
             assert.equal(environmentObjects[0].address, './test/environments/UAT.postman_environment.json');
             assert.equal(environmentObjects[1].address, './test/environments/UAT.postman_environment2.json');
@@ -115,13 +125,13 @@ describe('newman-async-runner tests',  function(){
             assert.equal(environmentObjects[1].name, 'UAT');
         })
     })
-    describe('#annonymizeReportsPassword()', function(){
+    describe('#anonymizeReportsPassword()', function(){
         let reportFiles = new Array();
         before(async function(){
             await fs.mkdirSync(runnerOptions.folders.reports, {recursive: true});
             await fs.copyFileSync('./test/testdata/reports/snippets-UAT-all_folders.html', './test/reports/snippets-UAT-all_folders.html');
             await fs.copyFileSync('./test/testdata/reports/snippets-UAT-all_folders.html', './test/reports/snippets-UAT-all_folders2.html');
-            await new _nar.NewmanRunner(runnerOptions).annonymizeReportsPassword();
+            await new _nar.NewmanRunner(runnerOptions).anonymizeReportsPassword();
             let reportsDirFiles = await fs.readdirSync('./test/reports/', 'utf8');
             for (file of reportsDirFiles){
                 reportFiles.push(await fs.readFileSync('./test/reports/' + file, 'utf8'));
@@ -145,6 +155,16 @@ describe('newman-async-runner tests',  function(){
             for (file of reportFiles){
                 assert.equal(file.includes('***'), true);
             }
+        })
+        it('utilizes custom anonymize filter', async function(){
+            let runnerOptions_copy = runnerOptions;
+            runnerOptions_copy.anonymizeFilter = /(?<=&lt;n1:)(.*?)*(?=&gt;)/g;
+            await fs.copyFileSync('./test/testdata/reports/snippets-UAT-all_folders.html', './test/reports/snippets-UAT-all_folders3.html');
+            await new _nar.NewmanRunner(runnerOptions_copy).anonymizeReportsPassword();
+            let file = await fs.readFileSync('./test/reports/snippets-UAT-all_folders3.html', 'utf8')
+
+            assert.equal(file.includes('lt;n1:password&gt'), false);
+            assert.equal(file.includes('lt;n1:***&gt'), true);
         })
     })
     describe('#prepareRunOptions()', function(){
@@ -239,6 +259,29 @@ describe('newman-async-runner tests',  function(){
             await async.parallel(nar.collectionRuns, function (err, results){
 		    });
         })
+        it('correctly handles non-environment runs', async function(){
+            runnerOptions_copy = runnerOptions;
+            runnerOptions_copy.folders.data = './data to test/'
+            collection.address = './test/test - abcd.json';
+            collection.content = 'test content';
+            collection.name = 'test - abcd';
+            collection.folders = ['folder 1', 'folder 2', 'folder 3'];
+            data = 'test data.csv';
+
+            _narMock = _nar;
+            _narMock.newman.run = function(options){
+                assert.equal(options.collection, './test/test - abcd.json');
+                assert.equal(options.environment, undefined);
+                assert.equal(options.folder, undefined);
+                assert.equal(options.iterationData, './data to test/' + 'test data.csv');
+            }
+            delete runnerOptions_copy.specific_collection_items_to_run;
+            runnerOptions_copy.parallelFolderRuns = false; 
+            nar = new _narMock.NewmanRunner(runnerOptions_copy);
+            nar.prepareRunOptions(collection, undefined, 'folder 2', data);
+            await async.parallel(nar.collectionRuns, function (err, results){
+		    });
+        })
         it('puts correct data for folder runs', async function(){
             runnerOptions_copy = runnerOptions;
             runnerOptions_copy.folders.data = './data to test/'
@@ -287,6 +330,35 @@ describe('newman-async-runner tests',  function(){
             nar = new _narMock.NewmanRunner(runnerOptions_copy);
             nar.prepareRunOptions(collection, environment, 'folder 2', data);
             await async.parallel(nar.collectionRuns, function (err, results){
+		    });
+        })
+        it('sets proper reporter template', async function(){
+            runnerOptions_copy = runnerOptions;
+            runnerOptions_copy2 = runnerOptions;
+            delete runnerOptions_copy2.reporter_template;
+
+            _narMock = _nar;
+            _narMock2 = _nar;
+
+            _narMock.newman.run = function(options){
+                assert.equal(options.reporter.htmlfull.template, './test/templates/' + 'htmlreqres.hbs');
+            }
+            _narMock2.newman.run = function(options){
+                assert.equal(options.reporter.htmlfull.template, undefined);
+            }
+
+            runnerOptions_copy.specific_collection_items_to_run = ['folder 2'];
+            runnerOptions_copy.parallelFolderRuns = false; 
+            runnerOptions_copy2.specific_collection_items_to_run = ['folder 2'];
+            runnerOptions_copy2.parallelFolderRuns = false; 
+
+            nar = new _narMock.NewmanRunner(runnerOptions_copy);
+            nar.prepareRunOptions(collection, environment, 'folder 2', data);
+            await async.parallel(nar.collectionRuns, function (err, results){
+            });
+            nar2 = new _narMock.NewmanRunner(runnerOptions_copy2);
+            nar2.prepareRunOptions(collection, environment, 'folder 2', data);
+            await async.parallel(nar2.collectionRuns, function (err, results){
 		    });
         })
     })

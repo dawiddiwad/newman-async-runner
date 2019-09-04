@@ -51,23 +51,28 @@ module.exports = {
 
 		async getEnvironments(){
 			let environmentObjects = new Array();
-			let environments = fs.readdirSync(this.options.folders.environments).filter(function(e){
-		        return path.extname(e).toLowerCase() === '.json';
-		    });
-		    for (let e of environments){
-		    	environmentObjects.push(new Environment(this.options.folders.environments + e,
-		    		await JSON.parse(fs.readFileSync(this.options.folders.environments + e)).name));
-		    }
+			if (this.options.folders.environments){
+				let environments = fs.readdirSync(this.options.folders.environments).filter(function(e){
+					return path.extname(e).toLowerCase() === '.json';
+				});
+				for (let e of environments){
+					environmentObjects.push(new Environment(this.options.folders.environments + e,
+						await JSON.parse(fs.readFileSync(this.options.folders.environments + e)).name));
+				}
+			} else { return [undefined]; }
 		    return environmentObjects;
 		}	
 
-		async annonymizeReportsPassword(){
+		async anonymizeReportsPassword(){
 		    this.removePassword = async function(file){
-		        let result = await fs.readFileSync(file, 'utf8');
-		        result = result.replace(/(?<=&lt;n1:password&gt;)(.*?)(?=&lt;\/n1:password&gt;)/g, '***');
-		            if(await fs.writeFileSync(file, result, 'utf8')){
-						console.log('removed password from: ' + file);
-					}
+				let result = await fs.readFileSync(file, 'utf8');
+				let anonymizeFilter = /(?<=&lt;n1:password&gt;)(.*?)(?=&lt;\/n1:password&gt;)/g;
+				if(this.options.anonymizeFilter){
+					anonymizeFilter = this.options.anonymizeFilter;
+				}
+		        result = result.replace(anonymizeFilter, '***');
+		            await fs.writeFileSync(file, result, 'utf8')
+					console.log('anonymized report: ' + file);
 		        }
 
 			let readFiles = await fs.readdirSync(this.options.folders.reports);
@@ -82,14 +87,14 @@ module.exports = {
 		async prepareRunOptions(_collection, _environment, _folder, _data){
 			let options = { 
 		        collection: _collection.address,
-		        environment: _environment.address,
+		        environment: (_environment ? _environment.address : undefined),
 		        folder: _folder,
 		        iterationData: this.options.folders.data + _data,
 		        reporters: ['cli', 'htmlfull'],
 		        reporter : { htmlfull : { 
 			            export : this.options.folders.reports 
 			            			+ _collection.name + "-" 
-			            			+ _environment.name + "-" 
+			            			+ (_environment ? _environment.name + "-" : "") 
 			            			+ _folder 
 			            			+ (_data ? "-" + _data : "") 
 			            			+ ".html",
@@ -98,9 +103,21 @@ module.exports = {
 		            }
 		        }
 		    };
-		    if (this.options.specific_collection_items_to_run && !this.options.specific_collection_items_to_run.includes(_folder)) { return; }
-		    if (this.options.parallelFolderRuns == false && !this.options.specific_collection_items_to_run) { delete options.folder; }
-		    if (!_data[0]) { delete options.iterationData; }
+		    if (this.options.specific_collection_items_to_run && !this.options.specific_collection_items_to_run.includes(_folder)){ 
+				return; 
+			}
+			if (this.options.parallelFolderRuns == false && !this.options.specific_collection_items_to_run){
+				delete options.folder;
+			}
+			if (!this.options.reporter_template){
+				delete options.reporter.htmlfull.template;
+			}
+			if (!_data[0]){
+				delete options.iterationData;
+			}
+			if (!_environment){
+				delete options.environment
+			}
 
 		    this.collectionRuns.push(function (done) {
 		    	newman.run(options, done);
@@ -130,7 +147,7 @@ module.exports = {
 		    await this.setupCollections();
 		    let self = this;
 		    await async.parallel(this.collectionRuns, function (err, results){
-		    	self.annonymizeReportsPassword();
+		    	self.anonymizeReportsPassword();
 		    });
 		}		
 	}	
