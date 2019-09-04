@@ -64,9 +64,10 @@ NewmanRunner: class NewmanRunner{
 	}
 	
 	async getFiles() {
-		return await fs.readdirSync(this.options.folders.data).filter(function (e) {
+		let files = await fs.readdirSync(this.options.folders.data).filter(function (e) {
 			return path.extname(e).toLowerCase() === '.json' || path.extname(e).toLowerCase() === '.csv';
 		});
+		return files.length ? files : [undefined];
 	}
 
 	async anonymizeReportsPassword(){
