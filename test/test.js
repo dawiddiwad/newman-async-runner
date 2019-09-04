@@ -115,13 +115,13 @@ describe('newman-async-runner tests',  function(){
                 await fs.unlinkSync('./test/environments/UAT.postman_environment.json')
                 await fs.unlinkSync('./test/environments/UAT.postman_environment2.json')
                 await fs.rmdirSync(runnerOptions.folders.environments);
-            } catch{}
+            } catch(e){console.log(e);}
         })
         it('should generate environments', async function(){    
             assert.equal(environmentObjects.length, 2);        
         })
         it('should return undefined array if no environments path is specified', async function(){
-            copyOptions = runnerOptions;
+            copyOptions = JSON.parse(JSON.stringify(runnerOptions));
             delete copyOptions.folders.environments;
             let returnEnvironments = await new _nar.NewmanRunner(copyOptions).getEnvironments();
             assert.deepEqual(returnEnvironments, [undefined]);
@@ -156,7 +156,7 @@ describe('newman-async-runner tests',  function(){
                 for (file of reportsDirFiles){
                     await fs.unlinkSync('./test/reports/' + file)
                 }
-                await fs.rmdirSync(runnerOptions_copy.folders.reports);
+                await fs.rmdirSync(runnerOptions.folders.reports);
             } catch{}
         })
         it('removes password', function(){

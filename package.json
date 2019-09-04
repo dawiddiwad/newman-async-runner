@@ -1,7 +1,7 @@
 {
   "name": "newman-async-runner",
   "description": "Asynchronous matrix test runner for newman",
-  "version": "1.0.7",
+  "version": "1.0.9",
   "maintainers": [
     {
       "name": "Dawid Dobrowolski",
@@ -13,6 +13,14 @@
     "async": "^3.1.0",
     "newman": "^4.5.4",
     "newman-reporter-htmlfull": "github:dawiddiwad/newman-reporter-htmlfull#master"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dawiddiwad/newman-async-runner.git"
+  },
+  "license": {
+    "name": "MIT",
+    "url": "https://raw.githubusercontent.com/dawiddiwad/newman-async-runner/master/LICENSE"
   },
   "repository": {
     "type": "git",
