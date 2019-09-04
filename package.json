@@ -1,6 +1,6 @@
 {
   "name": "newman-async-runner",
-  "description": "ASYNCHRONOUS NEWMAN TEST RUNNER",
+  "description": "Asynchronous matrix test runner for newman",
   "version": "1.0.7",
   "maintainers": [
     {
