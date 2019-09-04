@@ -1,17 +1,27 @@
+const 
+    chai = require('chai'),
+    spies = require('chai-spies');
+    should = chai.should(),
+    expect = chai.expect;
+
+chai.use(spies);
+
 describe('newman-async-runner tests',  function(){
     let 
         assert,
         _nar,
         runnerOptions;
+
+
     
     before(function(){
         this.timeout(10000);
         assert = require('assert');
         _nar = require('../newman-async-runner'); 
 
-        console.log = function(){
-            return;
-        }
+        // console.log = function(){
+        //     return;
+        // }
 
         runnerOptions = {
             parallelFolderRuns: false,                                  
@@ -209,16 +219,31 @@ describe('newman-async-runner tests',  function(){
 
             data = 'test data.csv';
         })
-        it('based on spcified folders', function(){
-            runnerOptions_copy.specific_collection_items_to_run = [collection.folders[0]];
-            nar = new _nar.NewmanRunner(runnerOptions_copy);
-            prepareRunOptionsFor_iterateAllFolders(collection, environment, collection.folders, data);
-            assert.equal(nar.collectionRuns.length, 1);
+        it('based on spcified folders', async function(){
+            let runner = new _nar.NewmanRunner(runnerOptions);
+            _collectionRuns = chai.spy.on(runner.collectionRuns, 'push');
+            _runNewman = chai.spy.on(_nar.newman, 'run', function (...items){
+                const _results = [...items][0];
+                expect(runnerOptions.specific_collection_items_to_run).to.include(_results.folder);
+            });
 
-            runnerOptions_copy.specific_collection_items_to_run = [collection.folders[0], collection.folders[2]];
-            nar = new _nar.NewmanRunner(runnerOptions_copy);
-            prepareRunOptionsFor_iterateAllFolders(collection, environment, collection.folders, data);
-            assert.equal(nar.collectionRuns.length, 2);
+            runner.prepareRunOptions(collection, environment, 'LUZEM', data);
+            runner.collectionRuns[0]();
+            _collectionRuns.should.have.been.called(1);
+
+
+
+
+
+            // runnerOptions_copy.specific_collection_items_to_run = [collection.folders[0]];
+            // nar = new _nar.NewmanRunner(runnerOptions_copy);
+            // prepareRunOptionsFor_iterateAllFolders(collection, environment, collection.folders, data);
+            // assert.equal(nar.collectionRuns.length, 1);
+
+            // runnerOptions_copy.specific_collection_items_to_run = [collection.folders[0], collection.folders[2]];
+            // nar = new _nar.NewmanRunner(runnerOptions_copy);
+            // prepareRunOptionsFor_iterateAllFolders(collection, environment, collection.folders, data);
+            // assert.equal(nar.collectionRuns.length, 2);
         })
         it('with parallel folder runs count', function(){
             runnerOptions_copy.specific_collection_items_to_run = [collection.folders[0], collection.folders[2]];
