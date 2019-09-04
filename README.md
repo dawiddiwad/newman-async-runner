@@ -1,6 +1,5 @@
 # Newman Async Runner
-newman async runner lets you run your postman *collections* asychnrounously (all at once) as matrix:
-```[collection (or specific folder), environment, iteratiod data]```<br/>
+newman async runner lets you run your postman *collections* asychnrounously (all at once) as all-against-all matrix:<br/>
 It uses `htmlfull` reporter.<br/>
 
 ## Instalation
