@@ -128,10 +128,13 @@ describe('newman-async-runner tests',  function(){
     describe('#anonymizeReportsPassword()', function(){
         let reportFiles = new Array();
         before(async function(){
-            await fs.mkdirSync(runnerOptions.folders.reports, {recursive: true});
+            let runnerOptions_copy = runnerOptions;
+            runnerOptions_copy.anonymizeFilter = 'rebelia';
+
+            await fs.mkdirSync(runnerOptions_copy.folders.reports, {recursive: true});
             await fs.copyFileSync('./test/testdata/reports/snippets-UAT-all_folders.html', './test/reports/snippets-UAT-all_folders.html');
             await fs.copyFileSync('./test/testdata/reports/snippets-UAT-all_folders.html', './test/reports/snippets-UAT-all_folders2.html');
-            await new _nar.NewmanRunner(runnerOptions).anonymizeReportsPassword();
+            await new _nar.NewmanRunner(runnerOptions_copy).anonymizeReportsPassword();
             let reportsDirFiles = await fs.readdirSync('./test/reports/', 'utf8');
             for (file of reportsDirFiles){
                 reportFiles.push(await fs.readFileSync('./test/reports/' + file, 'utf8'));
@@ -143,7 +146,7 @@ describe('newman-async-runner tests',  function(){
                 for (file of reportsDirFiles){
                     await fs.unlinkSync('./test/reports/' + file)
                 }
-                await fs.rmdirSync(runnerOptions.folders.reports);
+                await fs.rmdirSync(runnerOptions_copy.folders.reports);
             } catch{}
         })
         it('removes password', function(){

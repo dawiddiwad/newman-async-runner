@@ -67,7 +67,7 @@ module.exports = {
 		    this.removePassword = async function(file){
 				let result = await fs.readFileSync(file, 'utf8');
 				let anonymizeFilter = /(?<=&lt;n1:password&gt;)(.*?)(?=&lt;\/n1:password&gt;)/g;
-				if(this.options.anonymizeFilter){
+				if(this.options.anonymizeFilter != 'rebelia'){
 					anonymizeFilter = this.options.anonymizeFilter;
 				}
 		        result = result.replace(anonymizeFilter, '***');
