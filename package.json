@@ -10,7 +10,9 @@
     }
   ],
   "dependencies": {
-    "newman-reporter-htmlfull": "github:dawiddiwad/newman-reporter-htmlfull#master"
+    "newman-reporter-htmlfull": "github:dawiddiwad/newman-reporter-htmlfull#master",
+    "async": "^3.1.0",
+    "newman": "^4.5.4"
   },
   "repository": [
     {
@@ -26,10 +28,8 @@
   ],
   "main": "newman-async-runner.js",
   "devDependencies": {
-    "async": "^3.1.0",
     "chai": "^4.2.0",
-    "mocha": "^6.2.0",
-    "newman": "^4.5.4"
+    "mocha": "^6.2.0"
   },
   "scripts": {
     "test": "mocha"
