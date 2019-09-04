@@ -1,7 +1,7 @@
 {
   "name": "newman-async-runner",
   "description": "ASYNCHRONOUS NEWMAN TEST RUNNER",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "maintainers": [
     {
       "name": "Dawid Dobrowolski",
