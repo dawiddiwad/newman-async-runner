@@ -31,7 +31,7 @@ NewmanRunner: class NewmanRunner{
 			await fs.mkdirSync(this.options.folders[f], {recursive: true})
 			console.log('checking folder: ' + f);
 		   }
-	}  
+	}
 
 	async getCollections(){
 		let collectionObjects = new Array();
@@ -64,9 +64,10 @@ NewmanRunner: class NewmanRunner{
 	}
 	
 	async getFiles() {
-		return await fs.readdirSync(this.options.folders.data).filter(function (e) {
+		let files = await fs.readdirSync(this.options.folders.data).filter(function (e) {
 			return path.extname(e).toLowerCase() === '.json' || path.extname(e).toLowerCase() === '.csv';
 		});
+		return files.length ? files : [undefined];
 	}
 
 	async anonymizeReportsPassword(){
@@ -94,18 +95,18 @@ NewmanRunner: class NewmanRunner{
 	}
 
 	async prepareRunOptions(_collection, _environment, _folder, _data){
-		let options = { 
+		let options = {
 			collection: _collection.address,
 			environment: (_environment ? _environment.address : undefined),
 			folder: _folder,
 			iterationData: this.options.folders.data + _data,
 			reporters: ['cli', 'htmlfull'],
-			reporter : { htmlfull : { 
-					export : (this.options.folders.reports ? this.options.folders.reports : "") 
-								+ _collection.name + "-" 
-								+ (_environment ? _environment.name + "-" : "") 
+			reporter : { htmlfull : {
+					export : (this.options.folders.reports ? this.options.folders.reports : "")
+								+ _collection.name + "-"
+								+ (_environment ? _environment.name + "-" : "")
 								+ _folder 
-								+ (_data ? "-" + _data.match(/(.*)(?=\.json|.csv)/gi)[0] : "") 
+								+ (_data ? "-" + _data.match(/(.*)(?=\.json|.csv)/gi)[0] : "")
 								+ ".html",
 					template : this.options.folders.templates
 								+ this.options.reporter_template
@@ -113,7 +114,7 @@ NewmanRunner: class NewmanRunner{
 			}
 		};
 		if (this.options.specific_collection_items_to_run && !this.options.specific_collection_items_to_run.includes(_folder)){ 
-			return; 
+			return;
 		}
 		if (this.options.parallelFolderRuns == false && !this.options.specific_collection_items_to_run){
 			delete options.folder;
@@ -131,10 +132,10 @@ NewmanRunner: class NewmanRunner{
 		this.collectionRuns.push(function (done) {
 			newman.run(options, done);
 		});
-	}		
+	}
 
 	async setupCollections(){
-		for (let data of await this.getFiles() ? await this.getFiles() : [undefined]){
+		for (let data of await this.getFiles()){
 			for (let collection of await this.getCollections()){
 				for (let environment of await this.getEnvironments()){
 					if (this.options.parallelFolderRuns || this.options.specific_collection_items_to_run){
@@ -143,9 +144,9 @@ NewmanRunner: class NewmanRunner{
 						}
 					} else {await this.prepareRunOptions(collection, environment, "all_folders", data);}
 				}
-			}	
+			}
 		}
-		console.log('TOTAL ASYNC RUNS: ' + this.collectionRuns.length + '\n');  
+		console.log('TOTAL ASYNC RUNS: ' + this.collectionRuns.length + '\n');
 	}
 
 	async runTests(){
@@ -155,6 +156,6 @@ NewmanRunner: class NewmanRunner{
 		await async.parallel(this.collectionRuns, function (err, results){
 			self.anonymizeReportsPassword();
 		});
-	}		
-}	
+	}
+}
 };
