@@ -14,18 +14,14 @@
     "async": "^3.1.0",
     "newman": "^4.5.4"
   },
-  "repository": [
-    {
+  "repository":{
       "type": "git",
       "url": "https://github.com/dawiddiwad/newman-async-runner.git"
-    }
-  ],
-  "license": [
-    {
+    },
+  "license":{
       "name": "MIT",
       "url": "https://raw.githubusercontent.com/dawiddiwad/newman-async-runner/master/LICENSE"
-    }
-  ],
+    },
   "main": "newman-async-runner.js",
   "devDependencies": {
     "chai": "^4.2.0",

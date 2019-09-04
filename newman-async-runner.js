@@ -65,6 +65,9 @@ module.exports = {
 
 		async anonymizeReportsPassword(){
 		    this.removePassword = async function(file){
+				if(!this.options.anonymizeFilter){
+					return;
+				}
 				let result = await fs.readFileSync(file, 'utf8');
 				let anonymizeFilter = /(?<=&lt;n1:password&gt;)(.*?)(?=&lt;\/n1:password&gt;)/g;
 				if(this.options.anonymizeFilter != 'rebelia'){
@@ -92,14 +95,14 @@ module.exports = {
 		        iterationData: this.options.folders.data + _data,
 		        reporters: ['cli', 'htmlfull'],
 		        reporter : { htmlfull : { 
-			            export : this.options.folders.reports 
+			            export : (this.options.folders.reports ? this.options.folders.reports : "") 
 			            			+ _collection.name + "-" 
 			            			+ (_environment ? _environment.name + "-" : "") 
 			            			+ _folder 
-			            			+ (_data ? "-" + _data : "") 
+			            			+ (_data ? "-" + _data.match(/(.*)(?=\.json|.csv)/gi)[0] : "") 
 			            			+ ".html",
 			            template : this.options.folders.templates
-			            			+this.options.reporter_template
+			            			+ this.options.reporter_template
 		            }
 		        }
 		    };
@@ -112,7 +115,7 @@ module.exports = {
 			if (!this.options.reporter_template){
 				delete options.reporter.htmlfull.template;
 			}
-			if (!_data[0]){
+			if (!_data){
 				delete options.iterationData;
 			}
 			if (!_environment){
