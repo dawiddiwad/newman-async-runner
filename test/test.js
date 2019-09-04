@@ -105,13 +105,13 @@ describe('newman-async-runner tests',  function(){
                 await fs.unlinkSync('./test/environments/UAT.postman_environment.json')
                 await fs.unlinkSync('./test/environments/UAT.postman_environment2.json')
                 await fs.rmdirSync(runnerOptions.folders.environments);
-            } catch{}
+            } catch(e){console.log(e);}
         })
         it('should generate environments', async function(){    
             assert.equal(environmentObjects.length, 2);        
         })
         it('should return undefined array if no environments path is specified', async function(){
-            copyOptions = runnerOptions;
+            copyOptions = JSON.parse(JSON.stringify(runnerOptions));
             delete copyOptions.folders.environments;
             let returnEnvironments = await new _nar.NewmanRunner(copyOptions).getEnvironments();
             assert.deepEqual(returnEnvironments, [undefined]);
@@ -146,7 +146,7 @@ describe('newman-async-runner tests',  function(){
                 for (file of reportsDirFiles){
                     await fs.unlinkSync('./test/reports/' + file)
                 }
-                await fs.rmdirSync(runnerOptions_copy.folders.reports);
+                await fs.rmdirSync(runnerOptions.folders.reports);
             } catch{}
         })
         it('removes password', function(){
@@ -329,7 +329,7 @@ describe('newman-async-runner tests',  function(){
             collection.folders = ['folder 1', 'folder 2', 'folder 3'];
             environment.address = './test/test - abcd.json';
             environment.name = 'test - abcd';
-            data = [undefined];
+            data = undefined;
 
             _narMock = _nar;
             _narMock.newman.run = function(options){
@@ -343,7 +343,22 @@ describe('newman-async-runner tests',  function(){
             nar = new _narMock.NewmanRunner(runnerOptions_copy);
             nar.prepareRunOptions(collection, environment, 'folder 2', data);
             await async.parallel(nar.collectionRuns, function (err, results){
-		    });
+            });
+            
+            data = 'data file.json';
+            _narMock = _nar;
+            _narMock.newman.run = function(options){
+                assert.equal(options.collection, './test/test - abcd.json');
+                assert.equal(options.environment, './test/test - abcd.json');
+                assert.equal(options.folder, 'folder 2');
+                assert.equal(options.iterationData, './data to test/data file.json');
+            }
+            runnerOptions_copy.specific_collection_items_to_run = ['folder 2'];
+            runnerOptions_copy.parallelFolderRuns = false; 
+            nar = new _narMock.NewmanRunner(runnerOptions_copy);
+            nar.prepareRunOptions(collection, environment, 'folder 2', data);
+            await async.parallel(nar.collectionRuns, function (err, results){
+            });
         })
         it('sets proper reporter template', async function(){
             runnerOptions_copy = runnerOptions;
@@ -374,5 +389,26 @@ describe('newman-async-runner tests',  function(){
             await async.parallel(nar2.collectionRuns, function (err, results){
 		    });
         })
+        it('gives proper name to test report', async function(){
+
+            runnerOptions_copy = runnerOptions;
+            let _narMock2 = _nar
+            let nar2 = new _narMock2.NewmanRunner(runnerOptions_copy);
+            _narMock2.newman.run = function(options){
+                assert.equal(options.reporter.htmlfull.export, './test/reports/test - abcd-test - abcd-folder 2.html');
+            }
+            nar2.prepareRunOptions(collection, environment, 'folder 2', undefined);
+            await async.parallel(nar2.collectionRuns, function (err, results){
+            });
+            
+            runnerOptions_copy = runnerOptions;
+            nar2 = new _narMock2.NewmanRunner(runnerOptions_copy);
+            _narMock2.newman.run = function(options){
+                assert.equal(options.reporter.htmlfull.export, './test/reports/test - abcd-test - abcd-folder 2-test data.html');
+            }
+            nar2.prepareRunOptions(collection, environment, 'folder 2', 'test data.csv');
+            await async.parallel(nar2.collectionRuns, function (err, results){
+		    });
+        })
     })
-})
+    })
