@@ -135,7 +135,7 @@ NewmanRunner: class NewmanRunner{
 	}		
 
 	async setupCollections(){
-		for (let data of await this.getFiles() ? await this.getFiles() : [undefined]){
+		for (let data of await this.getFiles()){
 			for (let collection of await this.getCollections()){
 				for (let environment of await this.getEnvironments()){
 					if (this.options.parallelFolderRuns || this.options.specific_collection_items_to_run){
