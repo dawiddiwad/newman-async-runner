@@ -1,7 +1,7 @@
 # Newman Async Runner
 newman async runner lets you run your postman *collections* asychnrounously (all at once) as matrix:
-```[collection (or specific folder), environment, iteratiod data]```
-It uses `htmlfull` reporter.
+```[collection (or specific folder), environment, iteratiod data]```<br/>
+It uses `htmlfull` reporter.<br/>
 
 ## Instalation
 ```
@@ -9,7 +9,7 @@ npm i newman-async-runner
 ```
 
 ## Usage
-You need to simply instantiate ```NewmanRunner``` with ```runnerOptions``` as parameter and call ```runTests()``` 
+You need to simply instantiate ```NewmanRunner``` with ```runnerOptions``` as parameter and call ```runTests()``` <br/>
 ```javascript
 const runner = require('newman-async-runner');
 
@@ -30,20 +30,20 @@ new runner.NewmanRunner(runnerOptions).runTests();
 ```
 
 ### ```runnerOptions```:
-```parallelFolderRuns``` : *`optional`* will atomize each collection into separate folder runs.
+```parallelFolderRuns``` : *`optional`* will atomize each collection into separate folder runs.<br/><br/>
 
-###### ```folders``` :
-```-> collections``` : *`mandatory`*  path to collections folder.
-```-> environments``` : *`optional`*  path to environments folder.
-```-> reports``` : *`optional`*  path to reports output folder.
-```-> data``` : *`optional`*  path to test run iteration data folder.
-```-> templates``` : *`optional`*  path to `htmlfull` templates folder.
+###### ```folders``` :<br/>
+```-> collections``` : *`mandatory`*  path to collections folder.<br/>
+```-> environments``` : *`optional`*  path to environments folder.<br/>
+```-> reports``` : *`optional`*  path to reports output folder.<br/>
+```-> data``` : *`optional`*  path to test run iteration data folder.<br/>
+```-> templates``` : *`optional`*  path to `htmlfull` templates folder.<br/><br/>
 
-```reporter_template``` : *`optional`* - `htmlfull` reporter specific template filename. If not used runner will use default ```htmlfull``` template.
+```reporter_template``` : *`optional`* - `htmlfull` reporter specific template filename. If not used runner will use default ```htmlfull``` template.<br/><br/>
 
-```anonymizeFilter``` : *`optional`* - report file anonymize regex filter. Runner will put *** in place of matching groups. If not used runner will not anonymize reports.
+```anonymizeFilter``` : *`optional`* - report file anonymize regex filter. Runner will put *** in place of matching groups. If not used runner will not anonymize reports.<br/><br/>
 
-```specific_collection_items_to_run``` : *`optional`* - specific collection(s) folder or request (items) names to run. If not used runner will run all items in collection(s).
+```specific_collection_items_to_run``` : *`optional`* - specific collection(s) folder or request (items) names to run. If not used runner will run all items in collection(s).<br/><br/>
 
 # License
 [MIT](https://raw.githubusercontent.com/dawiddiwad/newman-async-runner/master/LICENSE)
