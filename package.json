@@ -24,6 +24,7 @@
   },
   "main": "newman-async-runner.js",
   "devDependencies": {
+    "sinon": "*",
     "nyc": "*",
     "chai": "^4.2.0",
     "chai-spies": "*",
