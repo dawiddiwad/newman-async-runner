@@ -6,23 +6,86 @@ const
 
 chai.use(spies);
 
-describe('newman-async-runner tests',  function(){
+const 
+path = require('path'),
+fs = require('fs'),
+async = require('async'),
+copyTest = {
+    collections: async function(amount, options){
+        while (amount){
+            await fs.copyFileSync('./test/testdata/collections/yolo.postman_collection.json',
+                options.folders.collections + amount + 'yolo.postman_collection.json');
+            amount--;    
+        }
+    },
+    environments: async function(amount, options){
+        while (amount){
+            await fs.copyFileSync('./test/testdata/environments/UAT.postman_environment.json',
+                options.folders.environments + amount + 'UAT.postman_environment.json');
+            amount--;    
+        }
+    },
+    data: async function(amount, options){
+        while (amount){
+            await fs.copyFileSync('./test/testdata/data/data.json',
+                options.folders.data + amount + 'data.json');
+            amount--;    
+        }
+    },
+    templates: async function(options){
+        await fs.copyFileSync('./test/testdata/templates/htmlreqres.hbs',
+            options.folders.templates + 'htmlreqres.hbs');  
+    },
+    all: async function(amount, options){
+        this.collections(amount, options);
+        this.environments(amount, options);
+        this.data(amount, options);
+        this.templates(options);
+    }
+};
+optionsFactory = function(){
+    return runnerOptions = {
+        parallelFolderRuns: false,                                  
+        folders: {
+            collections:'./test/collections/',                        
+            environments: './test/environments/',                       
+            reports: './test/reports/',                                 
+            data: './test/data/',                                        
+            templates: './test/templates/'},                             
+        reporter_template: 'htmlreqres.hbs', 
+        anonymizeFilter: 'rebelia',                       
+        specific_collection_items_to_run: ['folder1', 'folder 2']    
+    };
+}
+runnerFactory = function(){
+    return require('../newman-async-runner');
+}
+cleanTestDirectory = async function(){
+    folders = optionsFactory().folders
+    try{
+        for (f in folders){
+            for (file of await fs.readdirSync(folders[f])){
+                await fs.unlinkSync(folders[f] + file);
+            }
+            await fs.rmdirSync(folders[f]);
+        }
+    } catch (e){
+        throw e;
+    }
+}
+createTestFolders = async function(options){
+    for (f in options.folders){
+        await fs.mkdirSync(options.folders[f], {recursive: true});
+    }
+}
+
+
+describe('newman-async-runner unit',  function(){
     let 
         assert,
         _nar,
         runnerOptions;
-
-
-    
-    before(function(){
-        this.timeout(10000);
-        assert = require('assert');
-        _nar = require('../newman-async-runner'); 
-
-        // console.log = function(){
-        //     return;
-        // }
-
+    function resetOptions(){
         runnerOptions = {
             parallelFolderRuns: false,                                  
             folders: {
@@ -31,9 +94,22 @@ describe('newman-async-runner tests',  function(){
                 reports: './test/reports/',                                 
                 data: './test/data/',                                        
                 templates: './test/templates/'},                             
-            reporter_template: 'htmlreqres.hbs',                        
+            reporter_template: 'htmlreqres.hbs',  
+            anonymizeFilter: 'rebelia',                      
             specific_collection_items_to_run: ['folder1 Copy', 'LUZEM']    
         };
+    }    
+
+    before(function(){
+        this.timeout(10000);
+        assert = require('assert');
+        _nar = require('../newman-async-runner'); 
+
+        // console.log = function(){
+        //      return;
+        //  }
+
+         resetOptions();
     })
     describe('#setupFolders()',  function(){
         let directory;
@@ -206,7 +282,7 @@ describe('newman-async-runner tests',  function(){
                 nar.prepareRunOptions(collection, environment, folder, data);
             }
         }    
-        before(function(){
+        beforeEach(function(){
             runnerOptions_copy = runnerOptions;
 
             collection.address = './test/test - abcd.json';
@@ -437,3 +513,38 @@ describe('newman-async-runner tests',  function(){
         })
     })
     })
+
+describe('nenewman-async-runner e2e', function(){
+    this.timeout(10000);
+    describe('#non-data driven runs', function(){
+        beforeEach(async function(){
+            try{
+                await createTestFolders(optionsFactory());
+                await copyTest.collections(3, optionsFactory());
+                await copyTest.templates(optionsFactory());
+            } catch(e){throw e}
+        })
+        afterEach(async function(){
+            await cleanTestDirectory();
+        })
+        it('creates matrix once for all collections', async function(){
+            let options = optionsFactory();
+            let _mocked = runnerFactory();
+            delete options.specific_collection_items_to_run;
+            let runner = new _mocked.NewmanRunner(options);
+            let newmanRuns = chai.spy.on(_mocked.newman, 'run')
+            await runner.runTests();
+
+            expect(newmanRuns).to.have.been.called.exactly(3);
+        })
+        it('creates matrix once for all collections & environments')
+        it('creates matrix once for all collectons & environments & data files')
+    })
+    describe('#data file(s) driven runs', function(){
+        it('creates matrix once for all collections')
+        it('creates matrix once for all collections & environments')
+        it('creates matrix once for all collections & environments & data files')
+        it('creates data run once for single data file')
+        it('creates data runs for all data files')
+    })
+})    

@@ -59,8 +59,8 @@ NewmanRunner: class NewmanRunner{
 				environmentObjects.push(new Environment(this.options.folders.environments + e,
 					await JSON.parse(fs.readFileSync(this.options.folders.environments + e)).name));
 			}
-		} else { return [undefined]; }
-		return environmentObjects;
+		}
+		return environmentObjects.length ? environmentObjects : [undefined];
 	}
 	
 	async getFiles() {

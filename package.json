@@ -22,21 +22,14 @@
     "name": "MIT",
     "url": "https://raw.githubusercontent.com/dawiddiwad/newman-async-runner/master/LICENSE"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/dawiddiwad/newman-async-runner.git"
-  },
-  "license": {
-    "name": "MIT",
-    "url": "https://raw.githubusercontent.com/dawiddiwad/newman-async-runner/master/LICENSE"
-  },
   "main": "newman-async-runner.js",
   "devDependencies": {
+    "nyc": "*",
     "chai": "^4.2.0",
     "chai-spies": "*",
     "mocha": "^6.2.0"
   },
   "scripts": {
-    "test": "mocha"
+    "test": "nyc mocha"
   }
 }
