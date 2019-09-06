@@ -9,7 +9,6 @@ const
 
 
 const 
-path = require('path'),
 fs = require('fs'),
 async = require('async'),
 copyTest = {
@@ -56,6 +55,25 @@ optionsFactory = function(){
     };
 }
 
+collectionFactory = function(amount){
+    let array = new Array();
+    for (let i = 0; i < amount; i++){
+        let randomName = Math.floor((Math.random() * 9999) + 1) + 'col';
+        array.push({address: './folder/' + randomName + '.json', content: 'test content', name: randomName, folders:
+        ['f1', 'f2', 'f3']});
+    }
+    return array;
+}
+
+environmentFactory = function(amount){
+    let array = new Array();
+    for (let i = 0; i < amount; i++){
+        let randomName = Math.floor((Math.random() * 9999) + 1) + 'env';
+        array.push({address: './folder/' + randomName + '.json', name: randomName});
+    }
+    return array;
+}
+
 runnerFactory = function(){
     return new require('../newman-async-runner');
 }
@@ -81,6 +99,7 @@ describe('newman-async-runner [unit]', async function(done){
     let 
         assert,
         _nar,
+        sandbox,
         runnerOptions;
     function resetOptions(){
         runnerOptions = {
@@ -262,6 +281,7 @@ describe('newman-async-runner [unit]', async function(done){
             }
         }    
         beforeEach(async function(){
+            sandbox = sinon.createSandbox();
             await createTestFolders(optionsFactory());
             runnerOptions_copy = runnerOptions;
 
@@ -277,6 +297,7 @@ describe('newman-async-runner [unit]', async function(done){
 
         })
         afterEach(async function(){
+            sandbox.restore();
             await cleanTestDirectory();
         })
         it('based on spcified folders', function(){
@@ -317,31 +338,26 @@ describe('newman-async-runner [unit]', async function(done){
             nar.prepareRunOptions(collection, environment, 'all_folders', data);
             assert.equal(nar.collectionRuns.length, 1);
         })
-        // it('puts correct data for whole collections runs', async function(){
-        //     runnerOptions_copy = runnerOptions;
-        //     runnerOptions_copy.folders.data = './data to test/'
-        //     collection.address = './test/test - abcd.json';
-        //     collection.content = 'test content';
-        //     collection.name = 'test - abcd';
-        //     collection.folders = ['folder 1', 'folder 2', 'folder 3'];
-        //     environment.address = './test/test - abcd.json';
-        //     environment.name = 'test - abcd';
-        //     data = 'test data.csv';
+        it('puts correct data for whole collections runs', async function(){
+            let options = optionsFactory();
+            delete options.specific_collection_items_to_run;
 
-        //     _narMock = _nar;
-        //     _narMock.newman.run = function(options){
-        //         assert.equal(options.collection, './test/test - abcd.json');
-        //         assert.equal(options.environment, './test/test - abcd.json');
-        //         assert.equal(options.folder, undefined);
-        //         assert.equal(options.iterationData, './data to test/' + 'test data.csv');
-        //     }
-        //     delete runnerOptions_copy.specific_collection_items_to_run;
-        //     runnerOptions_copy.parallelFolderRuns = false; 
-        //     nar = new _narMock.NewmanRunner(runnerOptions_copy);
-        //     nar.prepareRunOptions(collection, environment, 'folder 2', data);
-        //     await async.parallel(nar.collectionRuns, function (err, results) {
-        //     });
-        // })
+            let NAR = runnerFactory();
+            NAR = new NAR.NewmanRunner(options);
+
+            let collectionRunsSpy = sandbox.spy(NAR.collectionRuns, 'push');
+            let runsSpy = sandbox.spy(runnerFactory().newman, 'run');
+
+            let collections = collectionFactory(1);
+            let environments = environmentFactory(1);
+            await NAR.prepareRunOptions(collections[0], environments[0], collections[0].folders[0], 'data.csv');
+            sinon.assert.calledOnce(collectionRunsSpy);
+
+            await async.parallel(NAR.collectionRuns, function(){});
+            expect(runsSpy.args[0][0].collection).to.equal(collections[0].address);
+            expect(runsSpy.args[0][0].environment).to.equal(environments[0].address);
+            expect(runsSpy.args[0][0].iterationData).to.equal(options.folders.data + 'data.csv');
+        })
         // it('correctly handles non-environment runs', async function(){
         //     runnerOptions_copy = runnerOptions;
         //     runnerOptions_copy.folders.data = './data to test/'
