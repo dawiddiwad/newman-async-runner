@@ -56,22 +56,34 @@ optionsFactory = function(){
 }
 
 collectionFactory = function(amount){
-    let array = new Array();
-    for (let i = 0; i < amount; i++){
-        let randomName = Math.floor((Math.random() * 9999) + 1) + 'col';
-        array.push({address: './folder/' + randomName + '.json', content: 'test content', name: randomName, folders:
+    let testData = new Array();
+    while (amount){
+        let randomName = Math.floor((Math.random() * 9999) + 1) + '_col';
+        testData.push({address: './collections folder/' + randomName + '.json', content: 'test content', name: randomName, folders:
         ['f1', 'f2', 'f3']});
+        amount--;
     }
-    return array;
+    return testData;
 }
 
 environmentFactory = function(amount){
-    let array = new Array();
-    for (let i = 0; i < amount; i++){
-        let randomName = Math.floor((Math.random() * 9999) + 1) + 'env';
-        array.push({address: './folder/' + randomName + '.json', name: randomName});
+    let testData = new Array();
+    while (amount){
+        let randomName = Math.floor((Math.random() * 9999) + 1) + '_env';
+        testData.push({address: './environments folder/' + randomName + '.json', name: randomName});
+        amount--;
     }
-    return array;
+    return testData;
+}
+
+dataFactory = function(amount, fileType){
+    let testData = new Array();
+    while (amount){
+        let randomName = Math.floor((Math.random() * 9999) + 1) + '_data';
+        testData.push({address: './data folder/' + randomName + '.' + fileType, name: randomName + '.' + fileType});
+        amount--;
+    }
+    return testData;
 }
 
 runnerFactory = function(){
@@ -350,37 +362,35 @@ describe('newman-async-runner [unit]', async function(done){
 
             let collections = collectionFactory(1);
             let environments = environmentFactory(1);
-            await NAR.prepareRunOptions(collections[0], environments[0], collections[0].folders[0], 'data.csv');
+            let dataFiles = dataFactory(1, 'csv');
+            await NAR.prepareRunOptions(collections[0], environments[0], collections[0].folders[0], dataFiles[0].name);
             sinon.assert.calledOnce(collectionRunsSpy);
 
             await async.parallel(NAR.collectionRuns, function(){});
             expect(runsSpy.args[0][0].collection).to.equal(collections[0].address);
             expect(runsSpy.args[0][0].environment).to.equal(environments[0].address);
-            expect(runsSpy.args[0][0].iterationData).to.equal(options.folders.data + 'data.csv');
+            expect(runsSpy.args[0][0].iterationData).to.equal(options.folders.data + dataFiles[0].name);
         })
-        // it('correctly handles non-environment runs', async function(){
-        //     runnerOptions_copy = runnerOptions;
-        //     runnerOptions_copy.folders.data = './data to test/'
-        //     collection.address = './test/test - abcd.json';
-        //     collection.content = 'test content';
-        //     collection.name = 'test - abcd';
-        //     collection.folders = ['folder 1', 'folder 2', 'folder 3'];
-        //     data = 'test data.csv';
+        it('correctly handles non-environment runs', async function(){
+            let options = optionsFactory();
+            delete options.specific_collection_items_to_run;
 
-        //     _narMock = _nar;
-        //     _narMock.newman.run = function(options){
-        //         assert.equal(options.collection, './test/test - abcd.json');
-        //         assert.equal(options.environment, undefined);
-        //         assert.equal(options.folder, undefined);
-        //         assert.equal(options.iterationData, './data to test/' + 'test data.csv');
-        //     }
-        //     delete runnerOptions_copy.specific_collection_items_to_run;
-        //     runnerOptions_copy.parallelFolderRuns = false; 
-        //     nar = new _narMock.NewmanRunner(runnerOptions_copy);
-        //     nar.prepareRunOptions(collection, undefined, 'folder 2', data);
-        //     await async.parallel(nar.collectionRuns, function (err, results) {
-        //     });
-        // })
+            let NAR = runnerFactory();
+            NAR = new NAR.NewmanRunner(options);
+
+            let collectionRunsSpy = sandbox.spy(NAR.collectionRuns, 'push');
+            let runsSpy = sandbox.spy(runnerFactory().newman, 'run');
+
+            let collections = collectionFactory(1);
+            let dataFiles = dataFactory(1, 'json');
+            await NAR.prepareRunOptions(collections[0], undefined, collections[0].folders[0], dataFiles[0].name);
+            sinon.assert.calledOnce(collectionRunsSpy);
+
+            await async.parallel(NAR.collectionRuns, function(){});
+            expect(runsSpy.args[0][0].collection).to.equal(collections[0].address);
+            expect(runsSpy.args[0][0].environment).to.equal(undefined);
+            expect(runsSpy.args[0][0].iterationData).to.equal(options.folders.data + dataFiles[0].name);
+        })
         // it('puts correct data for folder runs', async function(){
         //     runnerOptions_copy = runnerOptions;
         //     runnerOptions_copy.folders.data = './data to test/'
