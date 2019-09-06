@@ -27,7 +27,6 @@
     "sinon": "*",
     "nyc": "*",
     "chai": "^4.2.0",
-    "chai-spies": "*",
     "mocha": "^6.2.0"
   },
   "scripts": {

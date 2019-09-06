@@ -73,7 +73,6 @@ NewmanRunner: class NewmanRunner{
 	async anonymizeReportsPassword(){
 		this.removePassword = async function(file){
 			if(!this.options.anonymizeFilter){
-				return;
 			}
 			let result = await fs.readFileSync(file, 'utf8');
 			let anonymizeFilter = /(?<=&lt;n1:password&gt;)(.*?)(?=&lt;\/n1:password&gt;)/g;
@@ -85,13 +84,15 @@ NewmanRunner: class NewmanRunner{
 				console.log('anonymized report: ' + file);
 			}
 
-		let readFiles = await fs.readdirSync(this.options.folders.reports);
-		readFiles.filter(function(e){
-				return path.extname(e).toLowerCase() === '.html';
-			})
-			.forEach(file => {
-				this.removePassword(this.options.folders.reports + file);
-			})
+		try{
+			let readFiles = await fs.readdirSync(this.options.folders.reports);
+			readFiles.filter(function(e){
+					return path.extname(e).toLowerCase() === '.html';
+				})
+				.forEach(file => {
+					this.removePassword(this.options.folders.reports + file);
+				})
+		} catch {console.log('could not open reports folder, reports were not anonymized')}
 	}
 
 	async prepareRunOptions(_collection, _environment, _folder, _data){

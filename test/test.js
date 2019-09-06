@@ -1,15 +1,12 @@
-console.log = function(){
-        return;
-    }
+// console.log = function(){
+//         return;
+//     }
 
 const 
     chai = require('chai'),
-    spies = require('chai-spies');
     sinon = require('sinon'),
-    should = chai.should(),
     expect = chai.expect;
 
-chai.use(spies);
 
 const 
 path = require('path'),
@@ -62,6 +59,7 @@ optionsFactory = function(){
         specific_collection_items_to_run: ['folder1', 'LUZEM']    
     };
 }
+
 runnerFactory = function(){
     return require('../newman-async-runner');
 }
@@ -296,17 +294,6 @@ describe('newman-async-runner [unit]',  function(){
             data = 'test data.csv';
         })
         it('based on spcified folders', async function(){
-            let runner = new _nar.NewmanRunner(runnerOptions);
-            _collectionRuns = chai.spy.on(runner.collectionRuns, 'push');
-            _runNewman = chai.spy.on(_nar.newman, 'run', function (...items){
-                const _results = [...items][0];
-                expect(runnerOptions.specific_collection_items_to_run).to.include(_results.folder);
-            });
-
-            runner.prepareRunOptions(collection, environment, 'LUZEM', data);
-            runner.collectionRuns[0]();
-            _collectionRuns.should.have.been.called(1);
-
             runnerOptions_copy.specific_collection_items_to_run = [collection.folders[0]];
             nar = new _nar.NewmanRunner(runnerOptions_copy);
             prepareRunOptionsFor_iterateAllFolders(collection, environment, collection.folders, data);
@@ -510,9 +497,10 @@ describe('newman-async-runner [unit]',  function(){
     })
     
     })
-let sandbox;
+
 describe('newman-async-runner [e2e]', function(){
     this.timeout(10000);
+    let sandbox;
     describe('#non-data driven runs', function(){
         let collectionsAmount = 3;
         beforeEach(async function(){
@@ -532,9 +520,9 @@ describe('newman-async-runner [e2e]', function(){
             let options = optionsFactory();
             let _mocked = runnerFactory();
             delete options.specific_collection_items_to_run;
-            let runner = new _mocked.NewmanRunner(options);
 
             let _runs = sandbox.spy(_mocked.newman, 'run');
+            let runner = new _mocked.NewmanRunner(options);
             await runner.runTests();
             expect(_runs.args.length).to.equal(collectionsAmount);
             for (let i = 0; i < collectionsAmount; i++){
@@ -547,9 +535,9 @@ describe('newman-async-runner [e2e]', function(){
             let _mocked = runnerFactory();
             await copyTest.environments(collectionsAmount, options);
             delete options.specific_collection_items_to_run;
-            let runner = new _mocked.NewmanRunner(options);
 
             let _runs = sandbox.spy(_mocked.newman, 'run');
+            let runner = new _mocked.NewmanRunner(options);
             await runner.runTests();
             for (let i = 0, c = 0, e = 0; i < collectionsAmount*collectionsAmount; i++, e++){
                 //console.log(_runs.args[i][0].collection + ' ' + _runs.args[i][0].environment);
@@ -562,9 +550,9 @@ describe('newman-async-runner [e2e]', function(){
             let options = optionsFactory();
             let _mocked = runnerFactory();
             await copyTest.environments(collectionsAmount, options);
-            let runner = new _mocked.NewmanRunner(options);
 
             let _runs = sandbox.spy(_mocked.newman, 'run');
+            let runner = new _mocked.NewmanRunner(options);
             await runner.runTests();
             for (let i = 0, c = 0, e = 0, f = 0; i < collectionsAmount*collectionsAmount*options.specific_collection_items_to_run.length; i++, f++){
                 //console.log(_runs.args[i][0].collection + ' ' + _runs.args[i][0].environment + ' ' + _runs.args[i][0].folder);
@@ -575,7 +563,30 @@ describe('newman-async-runner [e2e]', function(){
                 if ((i+1) % options.specific_collection_items_to_run.length == 0) { f = -1; e++;}
             }
         })
-        it('creates matrix once for parallel folder runs on all collections & environments')
+        it('creates matrix once for parallel folder runs on all collections & environments', async function(){
+            let options = optionsFactory();
+            let _mocked = runnerFactory();
+            await copyTest.environments(collectionsAmount, options);
+            delete options.specific_collection_items_to_run;
+            options.parallelFolderRuns = true;
+            let runner = new _mocked.NewmanRunner(options);
+
+            let testFolders = ['folder1', 'folder1 Copy', 'LUZEM'];
+
+            let _runs = sandbox.spy(_mocked.newman, 'run');
+            await runner.runTests();
+
+            for (let i = 0, c = 1, e = 1, f = 1; i < collectionsAmount*collectionsAmount*3; i++){
+                //console.log(_runs.args[i][0].folder + ' ' + _runs.args[i][0].collection + ' ' + _runs.args[i][0].environment);
+                expect(_runs.args[i][0].collection).to.equal(options.folders.collections + c +'_col.json');
+                expect(_runs.args[i][0].environment).to.equal(options.folders.environments + e +'_env.json');
+                expect(_runs.args[i][0].folder).to.equal(testFolders[(f-1)]);
+                //console.log(f + ' ' + c + ' ' + e ); 
+                if ((i+1) % 3 == 0) { f = 0; } f++;
+                if ((i+1) % (collectionsAmount*collectionsAmount) == 0) { c++, e = 0 }
+                if ((i+1) % collectionsAmount == 0) { e++; }
+            }
+        })
     })
     describe('#data file(s) driven runs', function(){
         let collectionsAmount = 3;
@@ -599,12 +610,12 @@ describe('newman-async-runner [e2e]', function(){
             await copyTest.environments(collectionsAmount, options);
             await copyTest.data(collectionsAmount, options);
             delete options.specific_collection_items_to_run;
-            let runner = new _mocked.NewmanRunner(options);
 
             let _runs = sandbox.spy(_mocked.newman, 'run');
+            let runner = new _mocked.NewmanRunner(options);
             await runner.runTests();
             for (let i = 0, c = 0, e = 0, d = 0; i < collectionsAmount*collectionsAmount*collectionsAmount; i++, e++){
-                //console.log(_runs.args[i][0].collection + ' ' + _runs.args[i][0].environment + ' ' + _runs.args[i][0].iterationData);
+                console.log(_runs.args[i][0].collection + ' ' + _runs.args[i][0].environment + ' ' + _runs.args[i][0].iterationData);
                 expect(_runs.args[i][0].collection).to.equal(options.folders.collections + (c + 1) +'_col.json');
                 expect(_runs.args[i][0].environment).to.equal(options.folders.environments + (e + 1) +'_env.json');
                 expect(_runs.args[i][0].iterationData).to.equal(options.folders.data + (d + 1) +'_data.json');
