@@ -257,12 +257,12 @@ describe('newman-async-runner [unit]', async function(done){
         })
         it('removes password', function(){
             for (file of reportFiles){
-                assert.equal(file.includes('123DuP@321'), false);
+                expect(file).to.not.include('123DuP@321');
             }
         })
         it('puts *** in place of password', function(){
             for (file of reportFiles){
-                assert.equal(file.includes('***'), true);
+                expect(file).to.include('***');
             }
         })
         it('utilizes custom anonymize filter', async function(){
@@ -272,8 +272,8 @@ describe('newman-async-runner [unit]', async function(done){
             await new _nar.NewmanRunner(runnerOptions_copy).anonymizeReportsPassword();
             let file = fs.readFileSync('./test/reports/snippets-UAT-all_folders3.html', 'utf8')
 
-            assert.equal(file.includes('lt;n1:password&gt'), false);
-            assert.equal(file.includes('lt;n1:***&gt'), true);
+            expect(file).to.not.include('lt;n1:password&gt');
+            expect(file).to.include('lt;n1:***&gt');
         })
         it('does not anonymize report when requeired', async function(){
             let runnerOptions_copy = runnerOptions;
@@ -283,7 +283,7 @@ describe('newman-async-runner [unit]', async function(done){
             await new _nar.NewmanRunner(runnerOptions_copy).anonymizeReportsPassword();
             let file = fs.readFileSync('./test/reports/snippets-UAT-all_folders3.html', 'utf8')
 
-            assert.equal(file.includes('123DuP@321'), true);
+            expect(file).to.include('123DuP@321');
         })
     })
     describe('#prepareRunOptions()', function(){
