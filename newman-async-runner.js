@@ -14,6 +14,13 @@ class Environment{
 	}
 }
 
+class File{
+	constructor(address, name){
+		this.address = address;
+		this.name = name;
+	}
+}
+
 module.exports = {
 	path: path = require('path'),
 	fs: fs = require('fs'),
@@ -64,10 +71,14 @@ module.exports = {
 		}
 		
 		async getFiles() {
+			let fileObjects = new Array()
 			let files = await fs.readdirSync(this.options.folders.data).filter(function (e) {
 				return path.extname(e).toLowerCase() === '.json' || path.extname(e).toLowerCase() === '.csv';
 			});
-			return files.length ? files : [undefined];
+			for (let file of files){
+				fileObjects.push(new File(this.options.folders.data + file, file));
+			}
+			return fileObjects.length ? fileObjects : [undefined];
 		}
 
 		async anonymizeReportsPassword(){
@@ -100,14 +111,14 @@ module.exports = {
 				collection: _collection.address,
 				environment: (_environment ? _environment.address : undefined),
 				folder: _folder,
-				iterationData: this.options.folders.data + _data,
+				iterationData: _data ? _data.address : undefined,
 				reporters: ['cli', 'htmlfull'],
 				reporter : { htmlfull : {
 						export : (this.options.folders.reports ? this.options.folders.reports : "")
 									+ _collection.name + "-"
 									+ (_environment ? _environment.name + "-" : "")
 									+ _folder 
-									+ (_data ? "-" + _data.match(/(.*)(?=\.json|.csv)/gi)[0] : "")
+									+ (_data ? "-" + _data.name.match(/(.*)(?=\.json|.csv)/gi)[0] : "")
 									+ ".html",
 						template : this.options.folders.templates
 									+ this.options.reporter_template
@@ -131,7 +142,7 @@ module.exports = {
 			}
 
 			this.collectionRuns.push(function (done) {
-				newman.run(options, done);
+				 newman.run(options, done)
 			});
 		}
 
@@ -153,10 +164,9 @@ module.exports = {
 		async runTests(){
 			await this.setupFolders();
 			await this.setupCollections();
-			let self = this;
-			async.parallel(this.collectionRuns, function (err, results) {
-				self.anonymizeReportsPassword();
-			});
+			await async.parallel(this.collectionRuns);
+			await this.anonymizeReportsPassword();
+			console.log('all test runs completed');
 		}
 	}
 };
