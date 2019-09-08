@@ -30,6 +30,7 @@ module.exports = {
 	NewmanRunner: class NewmanRunner{
 		constructor(options){
 			this.collectionRuns = new Array();
+			this.collectionRuns.results = new Array();
 			this.options = options;
 		}
 
@@ -158,9 +159,16 @@ module.exports = {
 				delete options.environment
 			}
 
+			var newmanAsyncRunnerSelf = this;
 			this.collectionRuns.push(function (done) {
-				 newman.run(options, done)
+				 newman.run(options, done).on('done', function(err, summary){
+					newmanAsyncRunnerSelf.collectionRuns.results.push({errors: err, summary: summary});
+				 })
 			});
+		}
+
+		done(params) {
+			
 		}
 
 		async setupCollections(){
@@ -184,6 +192,7 @@ module.exports = {
 			await async.parallel(this.collectionRuns);
 			await this.anonymizeReportsPassword();
 			console.log('all test runs completed');
+			return this.collectionRuns.results;
 		}
 	}
 };
