@@ -10,7 +10,7 @@ newman async runner lets you run your postman *collections* asychnrounously (fir
 
 ` -> iteration data files`<br/><br/>
 
-![diagram](url)
+![diagram](https://github.com/dawiddiwad/newman-async-runner/raw/bugfix/resources/doc/diagram.png)
 
   
 
