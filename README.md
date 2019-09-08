@@ -48,8 +48,7 @@ const runnerOptions = {
 new runner.NewmanRunner(runnerOptions).runTests();
 ```
 
-<br>
-###integration with other tools
+### integration with other tools
 Runner can be easily used with popular test runners like ```Mocha``` or framewroks like ```Jest``` as ```runTests()``` method returns array of default ```newman``` results array ```[errors, summary]``` for each run in matrix.<br><br>
 Just look at this ```Mocha``` example with ```chai```:<br>
 
