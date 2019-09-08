@@ -139,7 +139,7 @@ describe('newman-async-runner [unit]', async function(done){
     }    
 
     before(function(){
-        this.timeout(20000);
+        this.timeout(10000);
         assert = require('assert');
         _nar = runnerFactory(); 
          resetOptions();
@@ -424,101 +424,14 @@ describe('newman-async-runner [unit]', async function(done){
             expect(runsSpy.args[0][0].folder).to.equal(options.specific_collection_items_to_run[0]);
             expect(runsSpy.args[1][0].folder).to.equal(options.specific_collection_items_to_run[1]);
         })
-        // it('puts correct data for data runs', async function(){
-        //     runnerOptions_copy = runnerOptions;
-        //     runnerOptions_copy.folders.data = './data to test/'
-        //     collection.address = './test/test - abcd.json';
-        //     collection.content = 'test content';
-        //     collection.name = 'test - abcd';
-        //     collection.folders = ['folder 1', 'folder 2', 'folder 3'];
-        //     environment.address = './test/test - abcd.json';
-        //     environment.name = 'test - abcd';
-        //     data = undefined;
-
-        //     _narMock = _nar;
-        //     _narMock.newman.run = function(options){
-        //         assert.equal(options.collection, './test/test - abcd.json');
-        //         assert.equal(options.environment, './test/test - abcd.json');
-        //         assert.equal(options.folder, 'folder 2');
-        //         assert.equal(options.iterationData, undefined);
-        //     }
-        //     runnerOptions_copy.specific_collection_items_to_run = ['folder 2'];
-        //     runnerOptions_copy.parallelFolderRuns = false; 
-        //     nar = new _narMock.NewmanRunner(runnerOptions_copy);
-        //     nar.prepareRunOptions(collection, environment, 'folder 2', data);
-        //     async.parallel(nar.collectionRuns, function (err, results) {
-        //     });
-            
-        //     data = 'data file.json';
-        //     _narMock = _nar;
-        //     _narMock.newman.run = function(options){
-        //         assert.equal(options.collection, './test/test - abcd.json');
-        //         assert.equal(options.environment, './test/test - abcd.json');
-        //         assert.equal(options.folder, 'folder 2');
-        //         assert.equal(options.iterationData, './data to test/data file.json');
-        //     }
-        //     runnerOptions_copy.specific_collection_items_to_run = ['folder 2'];
-        //     runnerOptions_copy.parallelFolderRuns = false; 
-        //     nar = new _narMock.NewmanRunner(runnerOptions_copy);
-        //     nar.prepareRunOptions(collection, environment, 'folder 2', data);
-        //     await async.parallel(nar.collectionRuns, function (err, results) {
-        //     });
-        // })
-        // it('sets proper reporter template', async function(){
-        //     runnerOptions_copy = runnerOptions;
-        //     runnerOptions_copy2 = runnerOptions;
-        //     delete runnerOptions_copy2.reporter_template;
-
-        //     _narMock = _nar;
-        //     _narMock2 = _nar;
-
-        //     _narMock.newman.run = function(options){
-        //         assert.equal(options.reporter.htmlfull.template, './test/templates/' + 'htmlreqres.hbs');
-        //     }
-        //     _narMock2.newman.run = function(options){
-        //         assert.equal(options.reporter.htmlfull.template, undefined);
-        //     }
-
-        //     runnerOptions_copy.specific_collection_items_to_run = ['folder 2'];
-        //     runnerOptions_copy.parallelFolderRuns = false; 
-        //     runnerOptions_copy2.specific_collection_items_to_run = ['folder 2'];
-        //     runnerOptions_copy2.parallelFolderRuns = false; 
-
-        //     nar = new _narMock.NewmanRunner(runnerOptions_copy);
-        //     nar.prepareRunOptions(collection, environment, 'folder 2', data);
-        //     async.parallel(nar.collectionRuns, function (err, results) {
-        //     });
-        //     nar2 = new _narMock.NewmanRunner(runnerOptions_copy2);
-        //     nar2.prepareRunOptions(collection, environment, 'folder 2', data);
-        //     async.parallel(nar2.collectionRuns, function (err, results) {
-        //     });
-        // })
-        // it('gives proper name to test report', async function(){
-
-        //     runnerOptions_copy = runnerOptions;
-        //     let _narMock2 = _nar
-        //     let nar2 = new _narMock2.NewmanRunner(runnerOptions_copy);
-        //     _narMock2.newman.run = function(options){
-        //         assert.equal(options.reporter.htmlfull.export, './test/reports/test - abcd-test - abcd-folder 2.html');
-        //     }
-        //     nar2.prepareRunOptions(collection, environment, 'folder 2', undefined);
-        //     async.parallel(nar2.collectionRuns, function (err, results) {
-        //     });
-            
-        //     runnerOptions_copy = runnerOptions;
-        //     nar2 = new _narMock2.NewmanRunner(runnerOptions_copy);
-        //     _narMock2.newman.run = function(options){
-        //         assert.equal(options.reporter.htmlfull.export, './test/reports/test - abcd-test - abcd-folder 2-test data.html');
-        //     }
-        //     nar2.prepareRunOptions(collection, environment, 'folder 2', 'test data.csv');
-        //     async.parallel(nar2.collectionRuns, function (err, results) {
-        //     });
-        // })
+        it('puts correct data for data runs')
+        it('sets proper reporter template')
+        it('gives proper name to test report')
     })
-    })
+})
 
 describe('newman-async-runner [e2e]', async function(){
-    this.timeout(30000);
+    this.timeout(120000);
     let sandbox;
     describe('#non-data driven runs', function(){
         let collectionsAmount = 3;
@@ -527,13 +440,38 @@ describe('newman-async-runner [e2e]', async function(){
                 await createTestFolders(optionsFactory());
                 await copyTest.collections(collectionsAmount, optionsFactory());
                 await copyTest.templates(optionsFactory());
-            } catch(e){//throw e
+            } catch(e){
+                throw e
             }
             sandbox = sinon.createSandbox();
         })
         afterEach('e2e test', async function(){
             await cleanTestDirectory();
             sandbox.restore();
+        })
+        it('runs for minimum options setup (only collections)', async function(){
+            let options = {
+                folders: {collections: './test/collections/'}
+            }
+            let _mocked = runnerFactory();
+
+            let _runs = sandbox.spy(_mocked.newman, 'run');
+            let runner = new _mocked.NewmanRunner(options);
+            await runner.runTests();
+            expect(_runs.args.length).to.equal(collectionsAmount);
+            for (let i = 0; i < collectionsAmount; i++){
+                expect(_runs.args[i][0].collection).to.equal(options.folders.collections + (i+1) +'_col.json');
+            }
+            
+            let reportFiles = await getReportsFrom(options.folders.reports);
+            expect(reportFiles.length).to.equal(1);
+            expect(reportFiles[0]).to.equal('yolo-all_folders.html');
+            try {
+                fs.unlinkSync(options.folders.reports + 'yolo-all_folders.html');
+                await fs.rmdirSync(options.folders.reports, {recursive: true});
+            } catch(e){
+                throw e;
+            }
         })
         it('runs for all collections and generates report', async function(){
             let options = optionsFactory();
@@ -550,8 +488,7 @@ describe('newman-async-runner [e2e]', async function(){
             
             let reportFiles = await getReportsFrom(options.folders.reports);
             expect(reportFiles.length).to.equal(1);
-            expect(reportFiles[0]).to.equal('yolo-all_folders.html')
-
+            expect(reportFiles[0]).to.equal('yolo-all_folders.html');
         })
         it('runs for all collections & environments', async function(){
             let options = optionsFactory();

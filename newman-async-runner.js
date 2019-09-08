@@ -34,6 +34,13 @@ module.exports = {
 		}
 
 		async setupFolders(){
+			if (!this.options || !this.options.folders || !this.options.folders.collections){
+				throw Error('undefined collections path in {runnerOptions.folders} -> Please define at least that :)');
+			}
+			if (!this.options.folders.reports){
+				this.options.folders.reports = './reports/'
+				console.log('no reports folder set, will put reports into ' + this.options.folders.reports);
+			}
 			for (let f in this.options.folders){
 				await fs.mkdirSync(this.options.folders[f], {recursive: true})
 				console.log('checking folder: ' + f);
@@ -41,6 +48,9 @@ module.exports = {
 		}
 
 		async getCollections(){
+			if (!this.options.folders.collections){
+				return [undefined];
+			}
 			let collectionObjects = new Array();
 			let colections = await fs.readdirSync(this.options.folders.collections).filter(function(e){
 				return path.extname(e).toLowerCase() === '.json';
@@ -57,6 +67,9 @@ module.exports = {
 		}
 
 		async getEnvironments(){
+			if (!this.options.folders.environments){
+				return [undefined];
+			}
 			let environmentObjects = new Array();
 			if (this.options.folders.environments){
 				let environments = fs.readdirSync(this.options.folders.environments).filter(function(e){
@@ -71,6 +84,9 @@ module.exports = {
 		}
 		
 		async getFiles() {
+			if (!this.options.folders.data){
+				return [undefined];
+			}
 			let fileObjects = new Array()
 			let files = await fs.readdirSync(this.options.folders.data).filter(function (e) {
 				return path.extname(e).toLowerCase() === '.json' || path.extname(e).toLowerCase() === '.csv';
@@ -82,9 +98,10 @@ module.exports = {
 		}
 
 		async anonymizeReportsPassword(){
+			if(!this.options.anonymizeFilter){
+				return;
+			}
 			this.removePassword = async function(file){
-				if(!this.options.anonymizeFilter){
-				}
 				let result = await fs.readFileSync(file, 'utf8');
 				let anonymizeFilter = /(?<=&lt;n1:password&gt;)(.*?)(?=&lt;\/n1:password&gt;)/g;
 				if(this.options.anonymizeFilter != 'rebelia'){
