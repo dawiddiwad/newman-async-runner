@@ -62,15 +62,7 @@ const
 	SIT =  {
 		folders:  {
 			collections:'./SIT/collections/'}
-	}, 
-	Regression =  {
-		folders:  {
-			collections:'./Regression/collections/'}
-	},
-	Staging =  {
-		folders:  {
-			collections:'./Staging/collections/'}
-	}; 	 		
+	};		
 
 describe('My Application API tests', function(){
 	it('passes all UAT tests', async function(){
@@ -82,20 +74,8 @@ describe('My Application API tests', function(){
 		for (let singleRun of await new runner.NewmanRunner(SIT).runTests()){
 			expect(singleRun.errors).to.be.null;
 		}
-	})
-	it('passes all Regression tests', async function(){
-		for (let singleRun of await new runner.NewmanRunner(Regression).runTests()){
-			expect(singleRun.errors).to.be.null;
-		}
-	})
-	it('passes all Staging tests', async function(){
-		for (let singleRun of await new runner.NewmanRunner(Staging).runTests()){
-			expect(singleRun.errors).to.be.null;
-		}
-	})			
+	})		
 })
-
-
 ```
 
   
