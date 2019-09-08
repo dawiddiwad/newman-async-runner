@@ -449,7 +449,7 @@ describe('newman-async-runner [e2e]', async function(){
             await cleanTestDirectory();
             sandbox.restore();
         })
-        it('runs for minimum options setup (only collections)', async function(){
+        it('runs for minimum options setup and returns results', async function(){
             let options = {
                 folders: {collections: './test/collections/'}
             }
@@ -457,7 +457,7 @@ describe('newman-async-runner [e2e]', async function(){
 
             let _runs = sandbox.spy(_mocked.newman, 'run');
             let runner = new _mocked.NewmanRunner(options);
-            await runner.runTests();
+            let runResults = await runner.runTests();
             expect(_runs.args.length).to.equal(collectionsAmount);
             for (let i = 0; i < collectionsAmount; i++){
                 expect(_runs.args[i][0].collection).to.equal(options.folders.collections + (i+1) +'_col.json');
@@ -466,6 +466,8 @@ describe('newman-async-runner [e2e]', async function(){
             let reportFiles = await getReportsFrom(options.folders.reports);
             expect(reportFiles.length).to.equal(1);
             expect(reportFiles[0]).to.equal('yolo-all_folders.html');
+            expect(runResults.length).to.equal(collectionsAmount);
+
             try {
                 fs.unlinkSync(options.folders.reports + 'yolo-all_folders.html');
                 await fs.rmdirSync(options.folders.reports, {recursive: true});
