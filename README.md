@@ -1,13 +1,16 @@
 
+
 # Newman Async Runner
 
-newman async runner lets you run your postman *collections* asychnrounously (all at once) as all-against-all matrix for:<br/>
+newman async runner lets you run your postman *collections* asychnrounously (fire runs at once) as 'all-against-all' matrix for:<br/>
 
 ` -> collections (or specific collections' folders/items)`<br/>
 
 ` -> environments`<br/>
 
 ` -> iteration data files`<br/><br/>
+
+![diagram](url)
 
   
 
@@ -48,9 +51,10 @@ const runnerOptions = {
 new runner.NewmanRunner(runnerOptions).runTests();
 ```
 
-### integration with other tools
-Runner can be easily used with popular test runners like ```Mocha``` or framewroks like ```Jest``` as ```runTests()``` method returns array of default ```newman``` results array ```[errors, summary]``` for each run in matrix.<br><br>
-Just look at this ```Mocha``` example with ```chai```:<br>
+## Integration with other tools
+Runner can be easily paired with popular test frameworks like ```Mocha``` or ```Jest```.<br><br>
+```runTests()``` method returns array of default ```newman``` results array [[errors, summary]](https://www.npmjs.com/package/newman#newmanruncallbackerror-object--summary-object-) for each run in matrix.<br><br>
+Simple ```Mocha``` example with ```chai```:<br>
 
 ```javascript
 const runner =  require('newman-async-runner');
@@ -80,13 +84,12 @@ describe('My Application API tests', function(){
 		for (let singleRun of await new runner.NewmanRunner(SIT).runTests()){
 			expect(singleRun.errors).to.be.null;
 		}
-    })
-    		
+    })   		
 })
 ```
 
   
-
+## API
 ### ```runnerOptions```:
 
 ```parallelFolderRuns``` : *`optional`* will atomize each collection into separate folder runs.<br/><br/>
@@ -117,8 +120,16 @@ describe('My Application API tests', function(){
 
 ```specific_collection_items_to_run``` : *`optional`* - specific collection(s) folder or request (items) names to run. If not used runner will run all items in collection(s).<br/><br/>
 
+### ```runnerMethods```:
+
+```runTests()```: - asynchronously fires ```newman``` test runs matrix for each combination of ```environment```, ```collection``` and ```iteration data``` files. It ```returns``` standard newman callback array [[errors, summary]](https://www.npmjs.com/package/newman#newmanruncallbackerror-object--summary-object-) for all runs in matrix.
+
+## Roadmap
+
+ - online collections, environments fetching trough Postman API (wip)
+
   
 
-# License
+## License
 
 [MIT](https://raw.githubusercontent.com/dawiddiwad/newman-async-runner/master/LICENSE)
