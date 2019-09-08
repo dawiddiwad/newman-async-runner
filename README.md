@@ -48,7 +48,9 @@ const runnerOptions = {
 new runner.NewmanRunner(runnerOptions).runTests();
 ```
 
-Runner can be easily used with popular test frameworks like ```Mocha``` or ```Jest``` as ```runTests()``` method returns default ```newman``` results array ```[errors, summary]``` for each run.<br>
+<br>
+###integration with other tools
+Runner can be easily used with popular test runners like ```Mocha``` or framewroks like ```Jest``` as ```runTests()``` method returns array of default ```newman``` results array ```[errors, summary]``` for each run in matrix.<br><br>
 Just look at this ```Mocha``` example with ```chai```:<br>
 
 ```javascript
@@ -57,24 +59,30 @@ const runner =  require('newman-async-runner');
 const 
 	UAT =  {
 		folders:  {
-			collections:'./UAT/collections/'}
+            collections:'./UAT/collections/'
+        }
 	}, 
 	SIT =  {
 		folders:  {
-			collections:'./SIT/collections/'}
+            collections:'./SIT/collections/'
+        }
 	};		
 
+
 describe('My Application API tests', function(){
+
 	it('passes all UAT tests', async function(){
 		for (let singleRun of await new runner.NewmanRunner(UAT).runTests()){
 			expect(singleRun.errors).to.be.null;
 		}
-	})
+    })
+    
 	it('passes all SIT tests', async function(){
 		for (let singleRun of await new runner.NewmanRunner(SIT).runTests()){
 			expect(singleRun.errors).to.be.null;
 		}
-	})		
+    })
+    		
 })
 ```
 
