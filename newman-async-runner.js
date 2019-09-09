@@ -167,10 +167,6 @@ module.exports = {
 			});
 		}
 
-		done(params) {
-			
-		}
-
 		async setupCollections(){
 			for (let data of await this.getFiles()){
 				for (let collection of await this.getCollections()){
