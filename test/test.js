@@ -151,6 +151,7 @@ describe('newman-async-runner [unit]', async function(done){
             directory = fs.readdirSync('./test/');
         })
         after(async function(){
+            await createTestFolders(optionsFactory());
             await cleanTestDirectory();
         })
         it('directory should contain folder: collections', function(){
@@ -167,6 +168,22 @@ describe('newman-async-runner [unit]', async function(done){
         })
         it('directory should contain folder: templates', function(){
             assert(directory.includes('templates'), true);
+        })
+        it('throws error when no collections folder is set in runner options', async function(){
+            await createTestFolders(optionsFactory());
+            await cleanTestDirectory();
+            let options = new Object();
+            let _mocked = runnerFactory();
+            let runner = new _mocked.NewmanRunner(options);
+            let thrown = false;
+            try{
+                await runner.setupFolders();
+            } catch(e){
+                thrown = true;
+            }
+            expect(thrown).to.be.true;
+            await createTestFolders(optionsFactory());
+            await cleanTestDirectory();
         })
     })
     describe('#getCollections()', function(){
@@ -204,6 +221,19 @@ describe('newman-async-runner [unit]', async function(done){
             assert.equal(collectionObjects[1].folders[0],'folder1');
             assert.equal(collectionObjects[1].folders[1], 'folder1 Copy');
             assert.equal(collectionObjects[1].folders[2], 'LUZEM');
+        })
+        it('should return undefined array when there are no collection folders', async function(){
+            let runner = new runnerFactory();
+            runner = new runner.NewmanRunner({});
+            expect(await runner.getCollections()[0]).to.be.undefined;
+
+            runner = new runnerFactory();
+            runner = new runner.NewmanRunner({options: null});
+            expect(await runner.getCollections()[0]).to.be.undefined;
+
+            runner = new runnerFactory();
+            runner = new runner.NewmanRunner({options: {folders: {}}});
+            expect(await runner.getCollections()[0]).to.be.undefined;
         })
     })
     describe('#getEnvironments()', function(){
@@ -253,6 +283,7 @@ describe('newman-async-runner [unit]', async function(done){
             }
         })
         after(async function(){
+            await createTestFolders(optionsFactory());
             await cleanTestDirectory();
         })
         it('removes password', function(){
@@ -284,6 +315,25 @@ describe('newman-async-runner [unit]', async function(done){
             let file = fs.readFileSync('./test/reports/snippets-UAT-all_folders3.html', 'utf8')
 
             expect(file).to.include('123DuP@321');
+        })
+        it('throws error when unable to access reports folder', async function(){
+            await createTestFolders(optionsFactory());
+            await cleanTestDirectory();
+            let runner = new runnerFactory();
+            runner = new runner.NewmanRunner({options: 
+                {folders: {reports: './dummy'}},
+                anonymizeFilter: 'regex'
+            });
+            
+            let thrown = false;
+            try{
+                await runner.anonymizeReportsPassword();
+            } catch {
+                thrown = true;
+            }
+            expect(thrown).to.be.true;
+            await createTestFolders(optionsFactory());
+            await cleanTestDirectory();
         })
     })
     describe('#prepareRunOptions()', function(){
@@ -459,6 +509,18 @@ describe('newman-async-runner [unit]', async function(done){
             expect(runsSpy.args[1][0].environment).to.equal(options.newmanOptions.environment);
             expect(runsSpy.args[2][0].environment).to.equal(options.newmanOptions.environment);
         })
+        it('throws error when no collections are defined for newman run', async function(){
+            let runner = runnerFactory();
+            runner = new runner.NewmanRunner(optionsFactory());
+            let thrown = false;
+            try{
+                runner.prepareRunOptions(undefined, undefined, undefined, undefined);
+            } catch {
+                thrown = true;
+            }
+            expect(thrown).to.be.true;
+        })
+        
         it('puts correct data for data runs')
         it('sets proper reporter template')
         it('gives proper name to test report')
