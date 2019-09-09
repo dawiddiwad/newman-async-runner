@@ -161,8 +161,8 @@ module.exports = {
 
 			var newmanAsyncRunnerSelf = this;
 			this.collectionRuns.push(function (done) {
-				 newman.run(options, done).on('done', function(err, summary){
-					newmanAsyncRunnerSelf.collectionRuns.results.push({errors: err, summary: summary});
+				 newman.run(options, done).on('done', function(error, summary){
+					newmanAsyncRunnerSelf.collectionRuns.results.push({error: error, summary: summary});
 				 })
 			});
 		}

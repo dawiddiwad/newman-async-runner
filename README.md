@@ -76,13 +76,13 @@ describe('My Application API tests', function(){
 
 	it('passes all UAT tests', async function(){
 		for (let singleRun of await new runner.NewmanRunner(UAT).runTests()){
-			expect(singleRun.errors).to.be.null;
+			expect(singleRun.error).to.be.null;
 		}
     })
     
 	it('passes all SIT tests', async function(){
 		for (let singleRun of await new runner.NewmanRunner(SIT).runTests()){
-			expect(singleRun.errors).to.be.null;
+			expect(singleRun.error).to.be.null;
 		}
     })   		
 })
