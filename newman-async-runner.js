@@ -125,22 +125,22 @@ module.exports = {
 		}
 
 		prepareRunOptions(_collection, _environment, _folder, _data){
-			let options = {
-				collection: _collection.address,
-				environment: (_environment ? _environment.address : undefined),
-				folder: _folder,
-				iterationData: _data ? _data.address : undefined,
-				reporters: ['cli', 'htmlfull'],
-				reporter : { htmlfull : {
-						export : (this.options.folders.reports ? this.options.folders.reports : "")
-									+ _collection.name + "-"
-									+ (_environment ? _environment.name + "-" : "")
-									+ _folder 
-									+ (_data ? "-" + _data.name.match(/(.*)(?=\.json|.csv)/gi)[0] : "")
-									+ ".html",
-						template : this.options.folders.templates
-									+ this.options.reporter_template
-					}
+			let options = this.options.newmanOptions ? this.options.newmanOptions : new Object();
+
+			options.collection = _collection.address;
+			options.environment = (_environment ? _environment.address : undefined);
+			options.folder = _folder;
+			options.iterationData = _data ? _data.address : undefined;
+			options.reporters = ['cli', 'htmlfull'];
+			options.reporter = { htmlfull : {
+					export : (this.options.folders.reports ? this.options.folders.reports : "")
+								+ _collection.name + "-"
+								+ (_environment ? _environment.name + "-" : "")
+								+ _folder 
+								+ (_data ? "-" + _data.name.match(/(.*)(?=\.json|.csv)/gi)[0] : "")
+								+ ".html",
+					template : this.options.folders.templates
+								+ this.options.reporter_template
 				}
 			};
 			if (this.options.specific_collection_items_to_run && !this.options.specific_collection_items_to_run.includes(_folder)){ 

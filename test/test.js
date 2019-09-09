@@ -424,6 +424,37 @@ describe('newman-async-runner [unit]', async function(done){
             expect(runsSpy.args[0][0].folder).to.equal(options.specific_collection_items_to_run[0]);
             expect(runsSpy.args[1][0].folder).to.equal(options.specific_collection_items_to_run[1]);
         })
+        it('passes-trough external newmanOptions', async function(){
+            let options = optionsFactory();
+            options.newmanOptions = {
+                color: 'off',
+                timeoutRequest: 10000,
+                collection: 'dummy'
+            };
+            let collection = collectionFactory(1);
+            delete options.specific_collection_items_to_run;
+
+            let NAR = runnerFactory();
+            NAR = new NAR.NewmanRunner(options);
+
+            let collectionRunsSpy = sandbox.spy(NAR.collectionRuns, 'push');
+            let runsSpy = sandbox.spy(runnerFactory().newman, 'run');
+
+            for (let folder of collection[0].folders){
+                await NAR.prepareRunOptions(collection[0], undefined, folder, undefined);
+            }
+            await async.parallel(NAR.collectionRuns, function(){});
+            sinon.assert.calledThrice(collectionRunsSpy);
+            expect(runsSpy.args[0][0].color).to.equal('off');
+            expect(runsSpy.args[1][0].color).to.equal('off');
+            expect(runsSpy.args[2][0].color).to.equal('off');
+            expect(runsSpy.args[0][0].timeoutRequest).to.equal(10000);
+            expect(runsSpy.args[1][0].timeoutRequest).to.equal(10000);
+            expect(runsSpy.args[2][0].timeoutRequest).to.equal(10000);
+            expect(runsSpy.args[0][0].collections).to.equal(collection.address);
+            expect(runsSpy.args[1][0].collections).to.equal(collection.address);
+            expect(runsSpy.args[2][0].collections).to.equal(collection.address);
+        })
         it('puts correct data for data runs')
         it('sets proper reporter template')
         it('gives proper name to test report')
