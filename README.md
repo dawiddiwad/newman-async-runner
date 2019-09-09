@@ -3,9 +3,9 @@
 
 # Newman Async Runner
 
-newman async runner lets you run your postman *collections* asychnrounously (fire runs at once) as 'all-against-all' matrix for:<br/>
+newman async runner lets you run your postman *collections* asychnrounously (fire runs at once) as all-against-all matrix for:<br/>
 
-` -> collections (or specific collections' folders/items)`<br/>
+` -> collections or their specific folders/items`<br/>
 
 ` -> environments`<br/>
 
@@ -32,24 +32,20 @@ npm i newman-async-runner
 You need to simply instantiate ```NewmanRunner``` with ```runnerOptions``` as parameter and call ```runTests()```  <br/>
 
 ```javascript
-const runner = require('newman-async-runner');
+const 
+	runner = require('newman-async-runner');
 
-const runnerOptions = {
-	parallelFolderRuns: false,
-	folders: {
-		collections:'./collections/',
-		environments: './environments/',
-		reports: './reports/', 
-		data: './data/',
-		templates: './templates/'},
-	reporter_template: 'htmlreqres.hbs',
-	anonymizeFilter: /(?<=\<password:\>)(.*?)(?=\<\\password\>)/g,
-	specific_collection_items_to_run: ['folder 1', 'folder 2']
-	newmanOptions = {
-		color: 'off',
-		timeoutRequest: 10000
+	runnerOptions = {
+		folders: {
+			collections:'./collections/',
+			environments: './environments/',
+			reports: './reports/', 
+			data: './data/',
+		},
+		newmanOptions = {
+			timeoutRequest: 10000
+		};
 	};
-};
 
 new runner.NewmanRunner(runnerOptions).runTests();
 ```
@@ -70,7 +66,7 @@ const
 			collections:'./UAT/collections/'
 		}
 	},
-		SIT = {
+	SIT = {
 		folders: {
 			collections:'./SIT/collections/'
 		}
@@ -95,9 +91,29 @@ describe('My Application API tests', function(){
   
 ## API
 ### ```runnerOptions```:
-###### ```folders``` :<br/>
+example of all available options:
+```javascript
+const runnerOptions = {
+	folders: {
+		collections:'./collections/',
+		environments: './environments/',
+		reports: './reports/', 
+		data: './data/',
+		templates: './templates/'},
+	reporter_template: 'htmlreqres.hbs',
+	anonymizeFilter: /(?<=\<password:\>)(.*?)(?=\<\\password\>)/g,
+	specific_collection_items_to_run: ['folder 1', 'folder 2'],
+	parallelFolderRuns: false,
+	newmanOptions = {
+		color: 'off',
+		timeoutRequest: 10000
+	};
+};
+```
 
-```-> collections``` : *`mandatory`* path to collections folder.<br/>
+##### ```folders``` :<br/>
+
+```-> collections``` : *`MANDATORY`* path to collections folder.<br/>
 
 ```-> environments``` : *`optional`* path to environments folder.<br/>
 
@@ -118,12 +134,12 @@ describe('My Application API tests', function(){
 
 ```parallelFolderRuns``` : *`optional`* will atomize each collection into separate folder runs.<br/><br/>
 
-```newmanOptions```:*`optional`* will pass-trough any [nemwan.run() options](https://www.npmjs.com/package/newman#api-reference). Note however, that this may overwrite some options used by *newman-async-runner*.<br><br>
+```newmanOptions```:*`optional`* this object will pass-trough any standard [nemwan.run() options](https://www.npmjs.com/package/newman#api-reference). Note however, that this may overwrite some options used by *newman-async-runner*.<br><br>
  
 
 ### ```runnerMethods```:
 
-```runTests()```: - asynchronously fires ```newman``` test runs matrix for each combination of ```environment```, ```collection``` and ```iteration data``` files. It ```returns``` standard newman callback array [[error, summary]](https://www.npmjs.com/package/newman#newmanruncallbackerror-object--summary-object-) for all runs in matrix.
+<br>```runTests()``` - asynchronously fires ```newman``` test runs matrix for each combination of ```environment```, ```collection``` and ```iteration data``` files. It ```returns``` standard newman [[error, summary]](https://www.npmjs.com/package/newman#newmanruncallbackerror-object--summary-object-) results array for each run in matrix.<br><br>
 
 ## Roadmap
 

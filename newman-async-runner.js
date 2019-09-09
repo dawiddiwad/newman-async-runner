@@ -49,7 +49,7 @@ module.exports = {
 		}
 
 		async getCollections(){
-			if (!this.options.folders.collections){
+			if (!this.options || !this.options.folders || !this.options.folders.collections){
 				return [undefined];
 			}
 			let collectionObjects = new Array();
@@ -121,20 +121,20 @@ module.exports = {
 					.forEach(file => {
 						this.removePassword(this.options.folders.reports + file);
 					})
-			} catch {console.log('could not open reports folder, reports were not anonymized')}
+			} catch (e) {throw new Error('could not open reports folder, reports were not anonymized, error occured: ' + e)}
 		}
 
 		prepareRunOptions(_collection, _environment, _folder, _data){
 			let options = this.options.newmanOptions ? this.options.newmanOptions : new Object();
 
 			options.collection = options.collection ? options.collection :
-				_collection.address;
+				(_collection ? _collection.address : undefined);
 
 			options.environment = options.environment ? options.environment :
 				(_environment ? _environment.address : undefined);
 
 			options.folder = options.folder ? options.folder :
-				_folder;
+				(_folder ? _folder : undefined);
 
 			options.iterationData = options.iterationData ? options.iterationData :
 				(_data ? _data.address : undefined);
@@ -145,16 +145,19 @@ module.exports = {
 			options.reporter = options.reporter ? options.reporter :
 				{ htmlfull : {
 					export : (this.options.folders.reports ? this.options.folders.reports : "")
-								+ _collection.name + "-"
-								+ (_environment ? _environment.name + "-" : "")
-								+ _folder 
-								+ (_data ? "-" + _data.name.match(/(.*)(?=\.json|.csv)/gi)[0] : "")
-								+ ".html",
+						+ (_collection ? _collection.name + "-" : "no_collection")
+						+ (_environment ? _environment.name + "-" : "")
+						+ _folder 
+						+ (_data ? "-" + _data.name.match(/(.*)(?=\.json|.csv)/gi)[0] : "")
+						+ ".html",
 					template : this.options.folders.templates
-								+ this.options.reporter_template
+						+ this.options.reporter_template
 					}
 				};
 
+			if (!options.collection){
+				throw Error('undefined collection for newman run options: ' + options);
+			}
 			if (this.options.specific_collection_items_to_run && !this.options.specific_collection_items_to_run.includes(options.folder)){ 
 				return;
 			}
@@ -164,10 +167,10 @@ module.exports = {
 			if (!this.options.reporter_template){
 				delete options.reporter.htmlfull.template;
 			}
-			if (!_data && !options.iterationData){
+			if (!options.iterationData){
 				delete options.iterationData;
 			}
-			if (!_environment && !options.environment){
+			if (!options.environment){
 				delete options.environment
 			}
 
