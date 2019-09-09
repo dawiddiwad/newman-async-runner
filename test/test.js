@@ -324,14 +324,14 @@ describe('newman-async-runner [unit]', async function(done){
                 {folders: {reports: './dummy'}},
                 anonymizeFilter: 'regex'
             });
-            
-            let thrown = false;
+
             try{
                 await runner.anonymizeReportsPassword();
-            } catch {
+            }catch(error) {
                 thrown = true;
+                expect(error).to.be.a('Error');
+                expect(error.message).to.equal("could not open reports folder, reports were not anonymized, error occured: TypeError: Cannot read property 'reports' of undefined");
             }
-            expect(thrown).to.be.true;
             await createTestFolders(optionsFactory());
             await cleanTestDirectory();
         })
@@ -512,15 +512,13 @@ describe('newman-async-runner [unit]', async function(done){
         it('throws error when no collections are defined for newman run', async function(){
             let runner = runnerFactory();
             runner = new runner.NewmanRunner(optionsFactory());
-            let thrown = false;
             try{
-                runner.prepareRunOptions(undefined, undefined, undefined, undefined);
-            } catch {
-                thrown = true;
+                runner.prepareRunOptions();  
+            }catch(error){
+                expect(error).to.be.a('Error');
+                expect(error.message).to.include('undefined collection for newman run options')
             }
-            expect(thrown).to.be.true;
         })
-        
         it('puts correct data for data runs')
         it('sets proper reporter template')
         it('gives proper name to test report')

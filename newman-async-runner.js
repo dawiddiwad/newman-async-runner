@@ -156,7 +156,7 @@ module.exports = {
 				};
 
 			if (!options.collection){
-				throw Error('undefined collection for newman run options: ' + options);
+				throw Error('undefined collection for newman run options' + (options ? ": " + JSON.stringify(options) : ""));
 			}
 			if (this.options.specific_collection_items_to_run && !this.options.specific_collection_items_to_run.includes(options.folder)){ 
 				return;
