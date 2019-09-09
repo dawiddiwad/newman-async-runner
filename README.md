@@ -1,5 +1,6 @@
 
 
+
 # Newman Async Runner
 
 newman async runner lets you run your postman *collections* asychnrounously (fire runs at once) as 'all-against-all' matrix for:<br/>
@@ -14,9 +15,7 @@ newman async runner lets you run your postman *collections* asychnrounously (fir
 
   
 
-It uses `htmlfull` reporter.<br/>
-
-  
+It uses `htmlfull` reporter - however this can be easily override by passing custom ```newmanOptions```,  see [API](#api) 
 
 ## Instalation
 
@@ -36,16 +35,20 @@ You need to simply instantiate ```NewmanRunner``` with ```runnerOptions``` as pa
 const runner = require('newman-async-runner');
 
 const runnerOptions = {
-	parallelFolderRuns: false,                                  
+	parallelFolderRuns: false,
 	folders: {
-		collections:'./collections/',                  
-		environments: './environments/',            
+		collections:'./collections/',
+		environments: './environments/',
 		reports: './reports/', 
-		data: './data/',                                  
-		templates: './templates/'},                          
+		data: './data/',
+		templates: './templates/'},
 	reporter_template: 'htmlreqres.hbs',
-	anonymizeFilter: /(?<=\<password:\>)(.*?)(?=\<\\password\>)/g,                     
+	anonymizeFilter: /(?<=\<password:\>)(.*?)(?=\<\\password\>)/g,
 	specific_collection_items_to_run: ['folder 1', 'folder 2']
+	newmanOptions = {
+		color: 'off',
+		timeoutRequest: 10000
+	};
 };
 
 new runner.NewmanRunner(runnerOptions).runTests();
@@ -53,49 +56,45 @@ new runner.NewmanRunner(runnerOptions).runTests();
 
 ## Integration with other tools
 Runner can be easily paired with popular test frameworks like ```Mocha``` or ```Jest```.<br><br>
-```runTests()``` method returns array of default ```newman``` results array [[errors, summary]](https://www.npmjs.com/package/newman#newmanruncallbackerror-object--summary-object-) for each run in matrix.<br><br>
+```runTests()``` method returns array of default ```newman``` results array [[error, summary]](https://www.npmjs.com/package/newman#newmanruncallbackerror-object--summary-object-) for each run in matrix.<br><br>
 Simple ```Mocha``` example with ```chai```:<br>
 
 ```javascript
-const runner =  require('newman-async-runner');
+const
+	expect = require('chai').expect,
+	runner = require('newman-async-runner').NewmanRunner;
 
 const 
-	UAT =  {
+	UAT = {
 		folders:  {
-            collections:'./UAT/collections/'
-        }
-	}, 
-	SIT =  {
-		folders:  {
-            collections:'./SIT/collections/'
-        }
-	};		
-
+			collections:'./UAT/collections/'
+		}
+	},
+		SIT = {
+		folders: {
+			collections:'./SIT/collections/'
+		}
+	};
 
 describe('My Application API tests', function(){
 
 	it('passes all UAT tests', async function(){
-		for (let singleRun of await new runner.NewmanRunner(UAT).runTests()){
+		for (let singleRun of await new runner(UAT).runTests()){
 			expect(singleRun.error).to.be.null;
 		}
-    })
-    
+	})
+
 	it('passes all SIT tests', async function(){
-		for (let singleRun of await new runner.NewmanRunner(SIT).runTests()){
+		for (let singleRun of await new runner(SIT).runTests()){
 			expect(singleRun.error).to.be.null;
 		}
-    })   		
+	})
 })
 ```
 
   
 ## API
 ### ```runnerOptions```:
-
-```parallelFolderRuns``` : *`optional`* will atomize each collection into separate folder runs.<br/><br/>
-
-  
-
 ###### ```folders``` :<br/>
 
 ```-> collections``` : *`mandatory`* path to collections folder.<br/>
@@ -109,20 +108,22 @@ describe('My Application API tests', function(){
 ```-> templates``` : *`optional`* path to `htmlfull` templates folder.<br/><br/>
 
   
-
 ```reporter_template``` : *`optional`* - `htmlfull` reporter specific template filename. If not used runner will use default ```htmlfull``` template.<br/><br/>
 
   
-
 ```anonymizeFilter``` : *`optional`* - report file anonymize regex filter. Runner will put *** in place of matching groups. If not used runner will not anonymize reports.<br/><br/>
 
   
-
 ```specific_collection_items_to_run``` : *`optional`* - specific collection(s) folder or request (items) names to run. If not used runner will run all items in collection(s).<br/><br/>
+
+```parallelFolderRuns``` : *`optional`* will atomize each collection into separate folder runs.<br/><br/>
+
+```newmanOptions```:*`optional`* will pass-trough any [nemwan.run() options](https://www.npmjs.com/package/newman#api-reference). Note however, that this may overwrite some options used by *newman-async-runner*.<br><br>
+ 
 
 ### ```runnerMethods```:
 
-```runTests()```: - asynchronously fires ```newman``` test runs matrix for each combination of ```environment```, ```collection``` and ```iteration data``` files. It ```returns``` standard newman callback array [[errors, summary]](https://www.npmjs.com/package/newman#newmanruncallbackerror-object--summary-object-) for all runs in matrix.
+```runTests()```: - asynchronously fires ```newman``` test runs matrix for each combination of ```environment```, ```collection``` and ```iteration data``` files. It ```returns``` standard newman callback array [[error, summary]](https://www.npmjs.com/package/newman#newmanruncallbackerror-object--summary-object-) for all runs in matrix.
 
 ## Roadmap
 

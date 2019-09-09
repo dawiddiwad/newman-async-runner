@@ -429,7 +429,8 @@ describe('newman-async-runner [unit]', async function(done){
             options.newmanOptions = {
                 color: 'off',
                 timeoutRequest: 10000,
-                collection: 'dummy'
+                collection: 'dummy',
+                environment: 'dummy'
             };
             let collection = collectionFactory(1);
             delete options.specific_collection_items_to_run;
@@ -445,15 +446,18 @@ describe('newman-async-runner [unit]', async function(done){
             }
             await async.parallel(NAR.collectionRuns, function(){});
             sinon.assert.calledThrice(collectionRunsSpy);
-            expect(runsSpy.args[0][0].color).to.equal('off');
-            expect(runsSpy.args[1][0].color).to.equal('off');
-            expect(runsSpy.args[2][0].color).to.equal('off');
+            expect(runsSpy.args[0][0].color).to.equal(options.newmanOptions.color);
+            expect(runsSpy.args[1][0].color).to.equal(options.newmanOptions.color);
+            expect(runsSpy.args[2][0].color).to.equal(options.newmanOptions.color);
             expect(runsSpy.args[0][0].timeoutRequest).to.equal(10000);
             expect(runsSpy.args[1][0].timeoutRequest).to.equal(10000);
             expect(runsSpy.args[2][0].timeoutRequest).to.equal(10000);
-            expect(runsSpy.args[0][0].collections).to.equal(collection.address);
-            expect(runsSpy.args[1][0].collections).to.equal(collection.address);
-            expect(runsSpy.args[2][0].collections).to.equal(collection.address);
+            expect(runsSpy.args[0][0].collection).to.equal(options.newmanOptions.collection);
+            expect(runsSpy.args[1][0].collection).to.equal(options.newmanOptions.collection);
+            expect(runsSpy.args[2][0].collection).to.equal(options.newmanOptions.collection);
+            expect(runsSpy.args[0][0].environment).to.equal(options.newmanOptions.environment);
+            expect(runsSpy.args[1][0].environment).to.equal(options.newmanOptions.environment);
+            expect(runsSpy.args[2][0].environment).to.equal(options.newmanOptions.environment);
         })
         it('puts correct data for data runs')
         it('sets proper reporter template')

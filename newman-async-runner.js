@@ -127,12 +127,23 @@ module.exports = {
 		prepareRunOptions(_collection, _environment, _folder, _data){
 			let options = this.options.newmanOptions ? this.options.newmanOptions : new Object();
 
-			options.collection = _collection.address;
-			options.environment = (_environment ? _environment.address : undefined);
-			options.folder = _folder;
-			options.iterationData = _data ? _data.address : undefined;
-			options.reporters = ['cli', 'htmlfull'];
-			options.reporter = { htmlfull : {
+			options.collection = options.collection ? options.collection :
+				_collection.address;
+
+			options.environment = options.environment ? options.environment :
+				(_environment ? _environment.address : undefined);
+
+			options.folder = options.folder ? options.folder :
+				_folder;
+
+			options.iterationData = options.iterationData ? options.iterationData :
+				(_data ? _data.address : undefined);
+
+			options.reporters = options.reporters ? options.reporters :
+				['cli', 'htmlfull'];
+
+			options.reporter = options.reporter ? options.reporter :
+				{ htmlfull : {
 					export : (this.options.folders.reports ? this.options.folders.reports : "")
 								+ _collection.name + "-"
 								+ (_environment ? _environment.name + "-" : "")
@@ -141,9 +152,10 @@ module.exports = {
 								+ ".html",
 					template : this.options.folders.templates
 								+ this.options.reporter_template
-				}
-			};
-			if (this.options.specific_collection_items_to_run && !this.options.specific_collection_items_to_run.includes(_folder)){ 
+					}
+				};
+
+			if (this.options.specific_collection_items_to_run && !this.options.specific_collection_items_to_run.includes(options.folder)){ 
 				return;
 			}
 			if (this.options.parallelFolderRuns == false && !this.options.specific_collection_items_to_run){
@@ -152,10 +164,10 @@ module.exports = {
 			if (!this.options.reporter_template){
 				delete options.reporter.htmlfull.template;
 			}
-			if (!_data){
+			if (!_data && !options.iterationData){
 				delete options.iterationData;
 			}
-			if (!_environment){
+			if (!_environment && !options.environment){
 				delete options.environment
 			}
 
