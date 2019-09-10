@@ -175,13 +175,12 @@ describe('newman-async-runner [unit]', async function(done){
             let options = new Object();
             let _mocked = runnerFactory();
             let runner = new _mocked.NewmanRunner(options);
-            let thrown = false;
             try{
                 await runner.setupFolders();
-            } catch(e){
-                thrown = true;
+            } catch(error){
+                expect(error).to.be.a('Error');
+                expect(error.message).to.equal('undefined collections path in {runnerOptions.folders} -> Please define at least that :)');
             }
-            expect(thrown).to.be.true;
             await createTestFolders(optionsFactory());
             await cleanTestDirectory();
         })
@@ -328,7 +327,6 @@ describe('newman-async-runner [unit]', async function(done){
             try{
                 await runner.anonymizeReportsPassword();
             }catch(error) {
-                thrown = true;
                 expect(error).to.be.a('Error');
                 expect(error.message).to.equal("could not open reports folder, reports were not anonymized, error occured: TypeError: Cannot read property 'reports' of undefined");
             }
@@ -531,13 +529,9 @@ describe('newman-async-runner [e2e]', async function(){
     describe('#non-data driven runs', function(){
         let collectionsAmount = 3;
         beforeEach('e2e test', async function(){
-            try{
-                await createTestFolders(optionsFactory());
-                await copyTest.collections(collectionsAmount, optionsFactory());
-                await copyTest.templates(optionsFactory());
-            } catch(e){
-                throw e
-            }
+            await createTestFolders(optionsFactory());
+            await copyTest.collections(collectionsAmount, optionsFactory());
+            await copyTest.templates(optionsFactory());
             sandbox = sinon.createSandbox();
         })
         afterEach('e2e test', async function(){
@@ -563,12 +557,8 @@ describe('newman-async-runner [e2e]', async function(){
             expect(reportFiles[0]).to.equal('yolo-all_folders.html');
             expect(runResults.length).to.equal(collectionsAmount);
 
-            try {
-                fs.unlinkSync(options.folders.reports + 'yolo-all_folders.html');
-                await fs.rmdirSync(options.folders.reports, {recursive: true});
-            } catch(e){
-                throw e;
-            }
+            fs.unlinkSync(options.folders.reports + 'yolo-all_folders.html');
+            await fs.rmdirSync(options.folders.reports, {recursive: true});
         })
         it('runs for all collections and generates report', async function(){
             let options = optionsFactory();
@@ -650,11 +640,9 @@ describe('newman-async-runner [e2e]', async function(){
     describe('#data file(s) driven runs', function(){
         let collectionsAmount = 3;
         beforeEach(async function(){
-            try{
-                await createTestFolders(optionsFactory());
-                await copyTest.collections(collectionsAmount, optionsFactory());
-                await copyTest.templates(optionsFactory());
-            } catch(e){throw e}
+            await createTestFolders(optionsFactory());
+            await copyTest.collections(collectionsAmount, optionsFactory());
+            await copyTest.templates(optionsFactory());
             sandbox = sinon.createSandbox();
         })
         afterEach(async function(){
