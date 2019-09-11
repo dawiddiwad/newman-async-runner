@@ -32,10 +32,9 @@ npm i newman-async-runner
 You need to simply instantiate ```NewmanRunner``` with ```runnerOptions``` as parameter and call ```runTests()```  <br/>
 
 ```javascript
-const 
-	runner = require('newman-async-runner');
+const runner = require('newman-async-runner');
 
-	runnerOptions = {
+const runnerOptions = {
 		folders: {
 			collections:'./collections/',
 			environments: './environments/',
@@ -113,13 +112,13 @@ const runnerOptions = {
 
 ##### ```folders``` :<br/>
 
-```-> collections``` : *`MANDATORY`* path to collections folder.<br/>
+```-> collections``` : *`MANDATORY`* path to collections folder or single file.<br/>
 
-```-> environments``` : *`optional`* path to environments folder.<br/>
+```-> environments``` : *`optional`* path to environments folder or single file.<br/>
 
 ```-> reports``` : *`optional`* path to reports output folder.<br/>
 
-```-> data``` : *`optional`* path to test run iteration data folder.<br/>
+```-> data``` : *`optional`* path to test run iteration data folder or single file.<br/>
 
 ```-> templates``` : *`optional`* path to `htmlfull` templates folder.<br/><br/>
 

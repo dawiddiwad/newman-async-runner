@@ -43,7 +43,7 @@ module.exports = {
 				console.log('no reports folder set, will put reports into ' + this.options.folders.reports);
 			}
 			for (let f in this.options.folders) {
-				if (fs.existsSync(f) && fs.lstatSync(f).isDirectory()){
+				if (fs.existsSync(this.options.folders[f])){
 					continue;
 				}
 				await fs.mkdirSync(this.options.folders[f], { recursive: true })
@@ -86,7 +86,7 @@ module.exports = {
 		}
 
 		async getEnvironments() {
-			if (!this.options.folders.environments) {
+			if (!this.options || !this.options.folders || !this.options.folders.environments) {
 				return [undefined];
 			}
 			let environmentsPath = this.options.folders.environments;
@@ -115,17 +115,28 @@ module.exports = {
 		}
 
 		async getFiles() {
-			if (!this.options.folders.data) {
+			if (!this.options || !this.options.folders || !this.options.folders.data) {
 				return [undefined];
 			}
-			let fileObjects = new Array()
-			let files = await fs.readdirSync(this.options.folders.data).filter(function (e) {
-				return path.extname(e).toLowerCase() === '.json' || path.extname(e).toLowerCase() === '.csv';
-			});
-			for (let file of files) {
-				fileObjects.push(new File(this.options.folders.data + file, file));
+			let dataPath = this.options.folders.data;
+			if (!fs.existsSync(dataPath)){
+				throw new Error('iteration data files path: ' + dataPath + ' does not exist or is invalid, unable to generate newman runs');
 			}
-			return fileObjects.length ? fileObjects : [undefined];
+			if (await fs.lstatSync(dataPath).isDirectory()){
+				let fileObjects = new Array()
+				let files = await fs.readdirSync(this.options.folders.data).filter(function (e) {
+					return path.extname(e).toLowerCase() === '.json' || path.extname(e).toLowerCase() === '.csv';
+				});
+				for (let file of files) {
+					fileObjects.push(new File(this.options.folders.data + file, file));
+				}
+				return fileObjects.length ? fileObjects : [undefined];
+			} else if (await fs.lstatSync(dataPath).isFile()){
+				if (path.extname(dataPath).toLowerCase() === '.json' || path.extname(dataPath).toLowerCase() === '.csv'){
+					let file = await JSON.parse(fs.readFileSync(dataPath));
+					return [new File(dataPath, path.basename(dataPath))];
+				}
+			}
 		}
 
 		async anonymizeReportsPassword() {
@@ -155,7 +166,9 @@ module.exports = {
 		}
 
 		prepareRunOptions(_collection, _environment, _folder, _data) {
-			let options = this.options.newmanOptions ? this.options.newmanOptions : new Object();
+
+			let options = this.options.newmanOptions ? JSON.parse(JSON.stringify(this.options.newmanOptions )) : 
+				new Object();
 
 			options.collection = options.collection ? options.collection :
 				(_collection ? _collection.address : undefined);

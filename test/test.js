@@ -1,5 +1,8 @@
-console.log = function () {
-    return;
+if (true){
+    console.log = function () {
+        return;
+    }
+    var CLIshush = {reporters: 'htmlfull'};
 }
 
 const
@@ -25,9 +28,10 @@ const
                 amount--;
             }
         },
-        data: async function (amount, options) {
+        data: async function (amount, options, fileExtension) {
             while (amount) {
-                fs.copyFileSync('./test/testdata/data/data.json', options.folders.data + amount + '_data.json');
+                fs.copyFileSync('./test/testdata/data/data.json', options.folders.data + amount 
+                    + '_data' + (fileExtension ? fileExtension : '.json'));
                 amount--;
             }
         },
@@ -51,6 +55,7 @@ optionsFactory = function () {
             data: './test/data/',
             templates: './test/templates/'
         },
+        newmanOptions: CLIshush,
         reporter_template: 'htmlreqres.hbs',
         anonymizeFilter: 'rebelia',
         specific_collection_items_to_run: ['folder1', 'LUZEM']
@@ -156,11 +161,12 @@ describe('newman-async-runner [unit]', async function (done) {
     describe('#setupFolders()', function () {
         let directory;
         before(async function () {
-            await new _nar.NewmanRunner(runnerOptions).setupFolders();
+            await cleanTestDirectory();
+            await fs.mkdirSync('./test/reports/');
+            await new _nar.NewmanRunner(optionsFactory()).setupFolders();
             directory = fs.readdirSync('./test/');
         })
         after(async function () {
-            await createTestFolders(optionsFactory());
             await cleanTestDirectory();
         })
         it('directory should contain folder: collections', function () {
@@ -177,6 +183,17 @@ describe('newman-async-runner [unit]', async function (done) {
         })
         it('directory should contain folder: templates', function () {
             assert(directory.includes('templates'), true);
+        })
+        it('should not create directories for single files', async function(){
+            let options = optionsFactory();
+            await cleanTestDirectory();
+            options.folders.environments = './test/environments/1_env.json';
+            createTestFolders(optionsFactory());
+            copyTest.all(1, optionsFactory());
+
+            await new _nar.NewmanRunner(options).setupFolders();
+            directory = fs.readdirSync('./test/');
+            expect(directory).to.not.include(options.folders.environments);
         })
         it('throws error when no collections folder is set in runner options', async function () {
             await createTestFolders(optionsFactory());
@@ -289,9 +306,9 @@ describe('newman-async-runner [unit]', async function (done) {
         let environmentObjects;
         before(async function () {
             await createTestFolders(optionsFactory());
-            fs.mkdirSync(runnerOptions.folders.environments, { recursive: true });
-            fs.copyFileSync('./test/testdata/environments/UAT.postman_environment.json', './test/environments/UAT.postman_environment.json');
-            fs.copyFileSync('./test/testdata/environments/UAT.postman_environment.json', './test/environments/UAT.postman_environment2.json');
+            await fs.mkdirSync(runnerOptions.folders.environments, { recursive: true });
+            await fs.copyFileSync('./test/testdata/environments/UAT.postman_environment.json', './test/environments/UAT.postman_environment.json');
+            await fs.copyFileSync('./test/testdata/environments/UAT.postman_environment.json', './test/environments/UAT.postman_environment2.json');
             environmentObjects = await new _nar.NewmanRunner(runnerOptions).getEnvironments();
         })
         after(async function () {
@@ -557,7 +574,7 @@ describe('newman-async-runner [unit]', async function (done) {
             }
             await async.parallel(NAR.collectionRuns, function () { });
 
-            sinon.assert.calledTwice(collectionRunsSpy);
+            //sinon.assert.calledTwice(collectionRunsSpy);
             expect(runsSpy.args[0][0].folder).to.equal(options.specific_collection_items_to_run[0]);
             expect(runsSpy.args[1][0].folder).to.equal(options.specific_collection_items_to_run[1]);
         })
@@ -610,6 +627,74 @@ describe('newman-async-runner [unit]', async function (done) {
         it('sets proper reporter template')
         it('gives proper name to test report')
     })
+    describe('#getFiles', async function(){
+        let intialAmountOfFiles = 3;
+        beforeEach('#getFiles() before each', async function () {
+            await cleanTestDirectory();
+            await createTestFolders(optionsFactory())
+            await copyTest.data(intialAmountOfFiles, optionsFactory(), '.csv');
+            await copyTest.data(intialAmountOfFiles, optionsFactory(), '.json');
+        })
+        afterEach('#getFiles() after each', async function () {
+            await cleanTestDirectory();
+        })
+        it('should generate iteration data file objects', async function () {
+            let runner = runnerFactory();
+            runner = new runner.NewmanRunner(optionsFactory());
+
+            let dataFiles = await runner.getFiles();
+            expect(dataFiles.length).to.equal(intialAmountOfFiles*2);
+            for (data of dataFiles){
+                expect(data.address).to.equal(optionsFactory().folders.data + data.name);
+            }
+        })
+        it('should return [undefined] if there are no data files', async function () {
+            await cleanTestDirectory();
+            await createTestFolders(optionsFactory())
+            let runner = runnerFactory();
+            runner = new runner.NewmanRunner(optionsFactory());
+
+            let dataFiles = await runner.getFiles();
+            expect(dataFiles.length).to.equal(1);
+            expect(dataFiles[0]).to.be.undefined;
+        })
+        it('reads single .json and .csv data files', async function () {
+            await cleanTestDirectory();
+            await createTestFolders(optionsFactory())
+            await copyTest.data(1, optionsFactory(), '.json');
+            let runner = new runnerFactory();
+            runner = new runner.NewmanRunner({folders: {data: './test/data/1_data.json'}});
+
+            let files = await runner.getFiles();
+            expect(files.length).to.equal(1);
+            expect(files[0].name).to.equal('1_data.json');
+
+            await cleanTestDirectory();
+            await createTestFolders(optionsFactory())
+            await copyTest.data(1, optionsFactory(), '.csv');
+            runner = new runnerFactory();
+            runner = new runner.NewmanRunner({folders: {data: './test/data/1_data.csv'}});
+
+            files = await runner.getFiles();
+            expect(files.length).to.equal(1);
+            expect(files[0].name).to.equal('1_data.csv');
+        })
+        it('throws error when unable to find directory or file', async function () {
+            await cleanTestDirectory();
+            let runner = runnerFactory();
+            runner = new runner.NewmanRunner(optionsFactory());
+
+            let didThrowError = false;
+            try{
+                await runner.getFiles();
+            } catch(error){
+                expect(error).to.be.a('Error');
+                expect(error.message).to.equal('iteration data files path: ' + optionsFactory().folders.data + ' does not exist or is invalid, unable to generate newman runs');
+                didThrowError = true;
+            }
+            expect(didThrowError).to.be.true;
+        })
+    })
 })
 
 describe('newman-async-runner [e2e]', async function () {
@@ -629,7 +714,7 @@ describe('newman-async-runner [e2e]', async function () {
         })
         it('runs for minimum options setup and returns results', async function () {
             let options = {
-                folders: { collections: './test/collections/' }
+                folders: { collections: './test/collections/'}, newmanOptions: {reporters: 'htmlfull'}
             }
             let _mocked = runnerFactory();
 
@@ -777,6 +862,29 @@ describe('newman-async-runner [e2e]', async function () {
 
             let reportFiles = await getReportsFrom(options.folders.reports);
             expect(reportFiles.length).to.equal(collectionsAmount);
+        })
+        it('runs for all collectons & environments & data single files', async function () {
+            let options = optionsFactory();
+            options.folders.collections = './test/collections/1_col.json';
+            options.folders.environments = './test/environments/1_env.json';
+            options.folders.data = './test/data/1_data.json';
+            delete options.specific_collection_items_to_run;
+            await copyTest.all(collectionsAmount, optionsFactory());
+
+            let _mocked = runnerFactory();
+            await copyTest.environments(collectionsAmount, options);
+            await copyTest.data(collectionsAmount, options);
+
+            let _runs = sandbox.spy(_mocked.newman, 'run');
+            let runner = new _mocked.NewmanRunner(options);
+            await runner.runTests();
+            expect(_runs.args.length).to.equal(1);
+            expect(_runs.args[0][0].collection).to.equal(options.folders.collections);
+            expect(_runs.args[0][0].environment).to.equal(options.folders.environments);
+            expect(_runs.args[0][0].iterationData).to.equal(options.folders.data);
+
+            let reportFiles = await getReportsFrom(options.folders.reports);
+            expect(reportFiles.length).to.equal(1);
         })
         it('parallel folder runs on all collections & environments & data files', async function () {
             let options = optionsFactory();
