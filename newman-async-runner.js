@@ -91,17 +91,31 @@ module.exports = {
 			if (!this.options.folders.environments) {
 				return [undefined];
 			}
-			let environmentObjects = new Array();
-			if (this.options.folders.environments) {
-				let environments = fs.readdirSync(this.options.folders.environments).filter(function (e) {
-					return path.extname(e).toLowerCase() === '.json';
-				});
-				for (let e of environments) {
-					environmentObjects.push(new Environment(this.options.folders.environments + e,
-						await JSON.parse(fs.readFileSync(this.options.folders.environments + e)).name));
-				}
+			let environmentsPath = this.options.folders.environments;
+			if (!fs.existsSync(environmentsPath)){
+				throw new Error('environments path: ' + environmentsPath + ' does not exist or is invalid, unable to generate newman runs')
 			}
-			return environmentObjects.length ? environmentObjects : [undefined];
+			if (await fs.lstatSync(environmentsPath).isDirectory()){
+				let environmentObjects = new Array();
+				if (this.options.folders.environments) {
+					let environments = fs.readdirSync(this.options.folders.environments).filter(function (e) {
+						return path.extname(e).toLowerCase() === '.json';
+					});
+					for (let e of environments) {
+						environmentObjects.push(new Environment(this.options.folders.environments + e,
+							await JSON.parse(fs.readFileSync(this.options.folders.environments + e)).name));
+					}
+				}
+				return environmentObjects.length ? environmentObjects : [undefined];
+			} else if (await fs.lstatSync(environmentsPath).isFile()){
+				if (path.extname(environmentsPath).toLowerCase() === '.json'){
+					let environment = await JSON.parse(fs.readFileSync(environmentsPath));
+					let environmentObject = new Environment(environmentsPath, environment.name);
+					return [environmentObject];
+				}
+			} else {
+				throw new TypeError('environments path: ' + environmentsPath + ' is neither a Directory or a File, unable to generate newman runs')
+			}
 		}
 
 		async getFiles() {

@@ -283,6 +283,14 @@ describe('newman-async-runner [unit]', async function (done) {
             assert.equal(environmentObjects[0].name, 'UAT');
             assert.equal(environmentObjects[1].name, 'UAT');
         })
+        it('read single file environment', async function () {
+            let runner = new runnerFactory();
+            runner = new runner.NewmanRunner({folders: {environments: './test/environments/UAT.postman_environment.json'}});
+
+            let environments = await runner.getEnvironments();
+            expect(environments.length).to.equal(1);
+            expect(environments[0].name).to.equal('UAT');
+        })
     })
     describe('#anonymizeReportsPassword()', function () {
         let reportFiles = new Array();
