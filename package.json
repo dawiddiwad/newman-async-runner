@@ -30,6 +30,8 @@
     "sinon": "*"
   },
   "scripts": {
-    "test": "nyc mocha"
+    "test": "nyc mocha test/test-utils.js test/unit-tests.js test/e2e-tests.js",
+    "unit-test": "nyc mocha test/test-utils.js test/unit-tests.js",
+    "e2e-test": "nyc mocha test/test-utils.js test/e2e-tests.js"
   }
 }
