@@ -10,6 +10,7 @@ const
 
 const
     fs = require('fs'),
+    net = require('net')
     async = require('async'),
     copyTest = {
         collections: async function (amount, options) {
@@ -253,6 +254,36 @@ describe('newman-async-runner [unit]', async function (done) {
             expect(collections[0].folders[1]).to.equal('folder1 Copy');
             expect(collections[0].folders[2]).to.equal('LUZEM');
         })
+        it('throws error when unable to find directory or file', async function () {
+            let runner = new runnerFactory();
+            let collectionsPath = './dummy';
+            runner = new runner.NewmanRunner({folders: {collections: collectionsPath}});
+
+            let didThrowError = false;
+            try{
+                await runner.getCollections();
+            } catch(error){
+                expect(error).to.be.a('Error');
+                expect(error.message).to.equal('collections path: ' + collectionsPath + ' does not exist or is invalid, unable to generate newman runs')
+                didThrowError = true;
+            }
+            expect(didThrowError).to.be.true;
+        })
+        it('throws error when given directory is neither directory or file', async function () {
+            let runner = new runnerFactory();
+            let collectionsPath = new net.Socket();
+            runner = new runner.NewmanRunner({folders: {collections: collectionsPath}});
+
+            let didThrowError = false;
+            try{
+                await runner.getCollections();
+            } catch(error){
+                expect(error).to.be.a('Error');
+                expect(error.message).to.equal('collections path: ' + collectionsPath + ' does not exist or is invalid, unable to generate newman runs')
+                didThrowError = true;
+            }
+            expect(didThrowError).to.be.true;
+        })
     })
     describe('#getEnvironments()', function () {
         let environmentObjects;
@@ -290,6 +321,36 @@ describe('newman-async-runner [unit]', async function (done) {
             let environments = await runner.getEnvironments();
             expect(environments.length).to.equal(1);
             expect(environments[0].name).to.equal('UAT');
+        })
+        it('throws error when unable to find directory or file', async function () {
+            let runner = new runnerFactory();
+            let environmentsPath = './test/environments/UAT.postman_environment_INVALID.json';
+            runner = new runner.NewmanRunner({folders: {environments: environmentsPath}});
+
+            let didThrowError = false;
+            try{
+                await runner.getEnvironments();
+            } catch(error){
+                expect(error).to.be.a('Error');
+                expect(error.message).to.equal('environments path: ' + environmentsPath + ' does not exist or is invalid, unable to generate newman runs')
+                didThrowError = true;
+            }
+            expect(didThrowError).to.be.true;
+        })
+        it('throws error when given directory is neither directory or file', async function () {
+            let runner = new runnerFactory();
+            let environmentsPath = new net.Socket();
+            runner = new runner.NewmanRunner({folders: {environments: environmentsPath}});
+
+            let didThrowError = false;
+            try{
+                await runner.getEnvironments();
+            } catch(error){
+                expect(error).to.be.a('Error');
+                expect(error.message).to.equal('environments path: ' + environmentsPath + ' does not exist or is invalid, unable to generate newman runs')
+                didThrowError = true;
+            }
+            expect(didThrowError).to.be.true;
         })
     })
     describe('#anonymizeReportsPassword()', function () {

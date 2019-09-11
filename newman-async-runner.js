@@ -82,8 +82,6 @@ module.exports = {
 					}
 					return [collectionObject];
 				}
-			} else {
-				throw new TypeError('collections path: ' + collectionsPath + ' is neither a Directory or a File, unable to generate newman runs')
 			}
 		}
 
@@ -93,7 +91,7 @@ module.exports = {
 			}
 			let environmentsPath = this.options.folders.environments;
 			if (!fs.existsSync(environmentsPath)){
-				throw new Error('environments path: ' + environmentsPath + ' does not exist or is invalid, unable to generate newman runs')
+				throw new Error('environments path: ' + environmentsPath + ' does not exist or is invalid, unable to generate newman runs');
 			}
 			if (await fs.lstatSync(environmentsPath).isDirectory()){
 				let environmentObjects = new Array();
@@ -113,8 +111,6 @@ module.exports = {
 					let environmentObject = new Environment(environmentsPath, environment.name);
 					return [environmentObject];
 				}
-			} else {
-				throw new TypeError('environments path: ' + environmentsPath + ' is neither a Directory or a File, unable to generate newman runs')
 			}
 		}
 
