@@ -24,10 +24,11 @@
   },
   "main": "newman-async-runner.js",
   "devDependencies": {
-    "sinon": "*",
-    "nyc": "*",
     "chai": "^4.2.0",
-    "mocha": "^6.2.0"
+    "mocha": "^6.2.0",
+    "np": "^5.0.3",
+    "nyc": "*",
+    "sinon": "*"
   },
   "scripts": {
     "test": "nyc mocha"
