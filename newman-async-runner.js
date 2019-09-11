@@ -43,6 +43,9 @@ module.exports = {
 				console.log('no reports folder set, will put reports into ' + this.options.folders.reports);
 			}
 			for (let f in this.options.folders) {
+				if (fs.existsSync(f) && fs.lstatSync(f).isDirectory()){
+					continue;
+				}
 				await fs.mkdirSync(this.options.folders[f], { recursive: true })
 				console.log('checking folder: ' + f);
 			}
@@ -52,19 +55,36 @@ module.exports = {
 			if (!this.options || !this.options.folders || !this.options.folders.collections) {
 				return [undefined];
 			}
-			let collectionObjects = new Array();
-			let colections = await fs.readdirSync(this.options.folders.collections).filter(function (e) {
-				return path.extname(e).toLowerCase() === '.json';
-			});
-			for (let c of colections) {
-				let collection = await JSON.parse(fs.readFileSync(this.options.folders.collections + c));
-				let collectionObject = new Collection(this.options.folders.collections + c, collection, collection.info.name);
-				for (let folder of collection.item) {
-					collectionObject.folders.push(folder.name);
-				}
-				collectionObjects.push(collectionObject);
+			let collectionsPath = this.options.folders.collections;
+			if (!fs.existsSync(collectionsPath)){
+				throw new Error('collections path: ' + collectionsPath + ' does not exist or is invalid, unable to generate newman runs')
 			}
-			return collectionObjects;
+			if (await fs.lstatSync(collectionsPath).isDirectory()){
+				let collectionObjects = new Array();
+				let colections = await fs.readdirSync(collectionsPath).filter(function (e) {
+					return path.extname(e).toLowerCase() === '.json';
+				});
+				for (let c of colections) {
+					let collection = await JSON.parse(fs.readFileSync(collectionsPath + c));
+					let collectionObject = new Collection(collectionsPath + c, collection, collection.info.name);
+					for (let folder of collection.item) {
+						collectionObject.folders.push(folder.name);
+					}
+					collectionObjects.push(collectionObject);
+				}
+				return collectionObjects;
+			} else if (await fs.lstatSync(collectionsPath).isFile()) {
+				if (path.extname(collectionsPath).toLowerCase() === '.json'){
+					let collection = await JSON.parse(fs.readFileSync(collectionsPath));
+					let collectionObject = new Collection(collectionsPath, collection, collection.info.name);
+					for (let folder of collection.item) {
+						collectionObject.folders.push(folder.name);
+					}
+					return [collectionObject];
+				}
+			} else {
+				throw new TypeError('collections path: ' + collectionsPath + ' is neither a Directory or a File, unable to generate newman runs')
+			}
 		}
 
 		async getEnvironments() {

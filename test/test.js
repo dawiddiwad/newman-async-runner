@@ -96,10 +96,14 @@ cleanTestDirectory = async function () {
     folders = optionsFactory().folders
     try {
         for (f in folders) {
-            for (file of fs.readdirSync(folders[f])) {
-                fs.unlinkSync(folders[f] + file);
+            if (!fs.existsSync(folders[f])) {
+                continue;
+            } else {
+                for (file of fs.readdirSync(folders[f])) {
+                    fs.unlinkSync(folders[f] + file);
+                }
+                await fs.rmdirSync(folders[f], { recursive: true });
             }
-            await fs.rmdirSync(folders[f], { recursive: true });
         }
     } catch (e) { throw e }
 }
@@ -193,9 +197,9 @@ describe('newman-async-runner [unit]', async function (done) {
         let collectionObjects;
         before(async function () {
             await createTestFolders(optionsFactory());
-            fs.mkdirSync(runnerOptions.folders.collections, { recursive: true });
-            fs.copyFileSync('./test/testdata/collections/yolo.postman_collection.json', './test/collections/yolo.postman_collection.json');
-            fs.copyFileSync('./test/testdata/collections/yolo.postman_collection.json', './test/collections/yolo.postman_collection2.json');
+            await fs.mkdirSync(runnerOptions.folders.collections, { recursive: true });
+            await fs.copyFileSync('./test/testdata/collections/yolo.postman_collection.json', './test/collections/yolo.postman_collection.json');
+            await fs.copyFileSync('./test/testdata/collections/yolo.postman_collection.json', './test/collections/yolo.postman_collection2.json');
             collectionObjects = await new _nar.NewmanRunner(runnerOptions).getCollections();
         })
         after(async function () {
@@ -237,6 +241,17 @@ describe('newman-async-runner [unit]', async function (done) {
             runner = new runnerFactory();
             runner = new runner.NewmanRunner({ options: { folders: {} } });
             expect(await runner.getCollections()[0]).to.be.undefined;
+        })
+        it('read single file collection', async function () {
+            let runner = new runnerFactory();
+            runner = new runner.NewmanRunner({folders: {collections: './test/collections/yolo.postman_collection.json'}});
+
+            let collections = await runner.getCollections();
+            expect(collections.length).to.equal(1);
+            expect(collections[0].name).to.equal('yolo');
+            expect(collections[0].folders[0]).to.equal('folder1');
+            expect(collections[0].folders[1]).to.equal('folder1 Copy');
+            expect(collections[0].folders[2]).to.equal('LUZEM');
         })
     })
     describe('#getEnvironments()', function () {
