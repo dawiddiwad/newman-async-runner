@@ -141,36 +141,7 @@ describe('newman-async-runner [unit]', async function (done) {
             expect(collections[0].folders[1]).to.equal('folder1 Copy');
             expect(collections[0].folders[2]).to.equal('LUZEM');
         })
-        it('throws error when unable to find directory or file', async function () {
-            let runner = new runnerFactory();
-            let collectionsPath = './dummy';
-            runner = new runner.NewmanRunner({folders: {collections: collectionsPath}});
-
-            let didThrowError = false;
-            try{
-                await runner.getCollections();
-            } catch(error){
-                expect(error).to.be.a('Error');
-                expect(error.message).to.equal('collections path: ' + collectionsPath + ' does not exist or is invalid, unable to generate newman runs')
-                didThrowError = true;
-            }
-            expect(didThrowError).to.be.true;
-        })
-        it('throws error when given directory is neither directory or file', async function () {
-            let runner = new runnerFactory();
-            let collectionsPath = new net.Socket();
-            runner = new runner.NewmanRunner({folders: {collections: collectionsPath}});
-
-            let didThrowError = false;
-            try{
-                await runner.getCollections();
-            } catch(error){
-                expect(error).to.be.a('Error');
-                expect(error.message).to.equal('collections path: ' + collectionsPath + ' does not exist or is invalid, unable to generate newman runs')
-                didThrowError = true;
-            }
-            expect(didThrowError).to.be.true;
-        })
+        it('calls postman api when path does not exist locally')
     })
     describe('#getEnvironments()', function () {
         let environmentObjects;
@@ -564,5 +535,18 @@ describe('newman-async-runner [unit]', async function (done) {
             }
             expect(didThrowError).to.be.true;
         })
+    })
+    describe('#checkApiCollections()', function(){
+        beforeEach('before each #checkApiCollections() test', async function(){
+            cleanTestDirectory();
+        })
+        afterEach('after each #checkApiCollections() test', async function(){
+            cleanTestDirectory();
+        })
+        it('returns single postman collection object')
+        it('returns multiple postman collection objects')
+        it('returns single postman collection object')
+        it('throws error when unable to fetch collection using given uri')
+        it('throws error when given uri request throws error')
     })
 })

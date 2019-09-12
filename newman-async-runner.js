@@ -52,13 +52,41 @@ module.exports = {
 			}
 		}
 
+		async checkApiCollections(uri){
+			let response; try{
+				response = await request(uri);
+			} catch (error){
+				throw new Error('collections path: ' + uri + ' does not exist or is invalid, unable to generate newman runs.\nCause: ' + error.toString());
+			}
+			if (!response || (!response.collection && !response.collections)){
+				throw new Error('collections path: ' + uri + ' does not exist or is invalid, unable to generate newman runs');
+			}
+
+			handleSingle = function(singleCollection){
+				let collectionObject = new Collection(uri, singleCollection, singleCollection.info.name)
+				for (folder of singleCollection.item){
+					collectionObject.folders.push(folder.name);
+				}
+				return collectionObject;
+			}
+
+			if (response.collection){
+				return handleSingle(response.collection);
+			}
+			if (response.collections){
+				for (collection of response.collections){
+					this.checkApiCollections('https://api.getpostman.com/collections/' + collection.uid + '?' + new URL(uri).searchParams.toString());
+				}
+			}
+		}
+
 		async getCollections() {
 			if (!this.options || !this.options.folders || !this.options.folders.collections) {
 				return [undefined];
 			}
 			let collectionsPath = this.options.folders.collections;
 			if (!fs.existsSync(collectionsPath)){
-				throw new Error('collections path: ' + collectionsPath + ' does not exist or is invalid, unable to generate newman runs')
+				return [await this.checkApiCollections(collectionsPath)];
 			}
 			if (await fs.lstatSync(collectionsPath).isDirectory()){
 				let collectionObjects = new Array();
