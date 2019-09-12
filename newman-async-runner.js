@@ -35,20 +35,13 @@ module.exports = {
 			this.options = options;
 		}
 
-		async setupFolders() {
+		setupFolders() {
 			if (!this.options || !this.options.folders || !this.options.folders.collections) {
 				throw Error('undefined collections path in {runnerOptions.folders} -> Please define at least that :)');
 			}
 			if (!this.options.folders.reports) {
 				this.options.folders.reports = './reports/'
 				console.log('no reports folder set, will put reports into ' + this.options.folders.reports);
-			}
-			for (let f in this.options.folders) {
-				if (fs.existsSync(this.options.folders[f])){
-					continue;
-				}
-				await fs.mkdirSync(this.options.folders[f], { recursive: true })
-				console.log('checking folder: ' + f);
 			}
 		}
 
@@ -274,7 +267,7 @@ module.exports = {
 		}
 
 		async runTests() {
-			await this.setupFolders();
+			this.setupFolders();
 			await this.setupCollections();
 			await async.parallel(this.collectionRuns);
 			await this.anonymizeReportsPassword();

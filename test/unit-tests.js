@@ -1,6 +1,7 @@
 import ('./test-utils');
 
 describe('newman-async-runner [unit]', async function (done) {
+    this.timeout(10000);
     const pmApiKey = '?apikey=76daa939671b4014bea6737bf870e216';
     const pmCollectionsEndpoint = 'https://api.getpostman.com/collections/';
     let
@@ -25,62 +26,30 @@ describe('newman-async-runner [unit]', async function (done) {
     }
 
     before(function () {
-        this.timeout(10000);
         assert = require('assert');
         _nar = runnerFactory();
         resetOptions();
     })
     describe('#setupFolders()', function () {
-        let directory;
-        before(async function () {
-            await cleanTestDirectory();
-            await fs.mkdirSync('./test/reports/');
-            await new _nar.NewmanRunner(optionsFactory()).setupFolders();
-            directory = fs.readdirSync('./test/');
-        })
-        after(async function () {
-            await cleanTestDirectory();
-        })
-        it('directory should contain folder: collections', function () {
-            assert(directory.includes('collections'), true);
-        })
-        it('directory should contain folder: environments', function () {
-            assert(directory.includes('environments'), true);
-        })
-        it('directory should contain folder: reports', function () {
-            assert(directory.includes('reports'), true);
-        })
-        it('directory should contain folder: data', function () {
-            assert(directory.includes('data'), true);
-        })
-        it('directory should contain folder: templates', function () {
-            assert(directory.includes('templates'), true);
-        })
-        it('should not create directories for single files', async function(){
-            let options = optionsFactory();
-            await cleanTestDirectory();
-            options.folders.environments = './test/environments/1_env.json';
-            createTestFolders(optionsFactory());
-            copyTest.all(1, optionsFactory());
-
-            await new _nar.NewmanRunner(options).setupFolders();
-            directory = fs.readdirSync('./test/');
-            expect(directory).to.not.include(options.folders.environments);
-        })
         it('throws error when no collections folder is set in runner options', async function () {
-            await createTestFolders(optionsFactory());
-            await cleanTestDirectory();
             let options = new Object();
-            let _mocked = runnerFactory();
-            let runner = new _mocked.NewmanRunner(options);
+            let runner = runnerFactory();
+            runner = new runner.NewmanRunner(options);
             try {
                 await runner.setupFolders();
             } catch (error) {
                 expect(error).to.be.a('Error');
                 expect(error.message).to.equal('undefined collections path in {runnerOptions.folders} -> Please define at least that :)');
             }
-            await createTestFolders(optionsFactory());
-            await cleanTestDirectory();
+        })
+        it('adds reports folder to runner options if missing', async function(){
+            let options = optionsFactory();
+            delete options.folders.reports;
+            let runner = runnerFactory();
+            runner = new runner.NewmanRunner(options);
+            await runner.setupFolders();
+
+            expect(runner.options.folders.reports).to.equal('./reports/');
         })
     })
     describe('#getCollections()', function () {
