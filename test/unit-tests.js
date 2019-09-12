@@ -1,6 +1,8 @@
 import ('./test-utils');
 
 describe('newman-async-runner [unit]', async function (done) {
+    const pmApiKey = '?apikey=76daa939671b4014bea6737bf870e216';
+    const pmCollectionsEndpoint = 'https://api.getpostman.com/collections/';
     let
         assert,
         _nar,
@@ -141,7 +143,17 @@ describe('newman-async-runner [unit]', async function (done) {
             expect(collections[0].folders[1]).to.equal('folder1 Copy');
             expect(collections[0].folders[2]).to.equal('LUZEM');
         })
-        it('calls postman api when path does not exist locally')
+        it('calls postman api when path does not exist locally', async function(){
+            sandbox = sinon.createSandbox();
+            let runner = new runnerFactory();
+            sandbox.stub(runnerFactory().NewmanRunner.prototype, 'checkApiCollections').callsFake(function(uri){
+                return uri;
+            });
+
+            runner = new runner.NewmanRunner({folders: {collections: pmCollectionsEndpoint}});
+            expect(await runner.getCollections()).to.equal(pmCollectionsEndpoint);
+            sandbox.restore();
+        })
     })
     describe('#getEnvironments()', function () {
         let environmentObjects;
@@ -537,8 +549,6 @@ describe('newman-async-runner [unit]', async function (done) {
         })
     })
     describe('#checkApiCollections()', function(){
-        const pmApiKey = '?apikey=76daa939671b4014bea6737bf870e216';
-        const pmCollectionsEndpoint = 'https://api.getpostman.com/collections/';
         beforeEach('before each #checkApiCollections() test', async function(){
             cleanTestDirectory();
         })
@@ -572,8 +582,35 @@ describe('newman-async-runner [unit]', async function (done) {
             expect(result[0].folders[2]).to.equal('LUZEM');
 
         })
-        // it('returns single postman collection object')
-        // it('throws error when unable to fetch collection using given uri')
-        // it('throws error when given uri request throws error')
+        it('throws error when unable to fetch collection using given uri', async function(){
+            let uri = 'https://www.google.com';
+            let runner = new runnerFactory();
+            runner = new runner.NewmanRunner(optionsFactory());
+
+            let thrownError = false;
+            try{
+                await runner.checkApiCollections(uri);
+            } catch(error){
+                expect(error).to.be.a('Error');
+                expect(error.message).to.equal('collections path: ' + uri + ' does not exist or is invalid, unable to generate newman runs');
+                thrownError = true;
+            }
+            expect(thrownError).to.be.true;
+        })
+        it('throws error when given uri request throws error', async function(){
+            let uri = 'dummy';
+            let runner = new runnerFactory();
+            runner = new runner.NewmanRunner(optionsFactory());
+
+            let thrownError = false;
+            try{
+                await runner.checkApiCollections(uri);
+            } catch(error){
+                expect(error).to.be.a('Error');
+                expect(error.message).to.equal('collections path: ' + uri + ' does not exist or is invalid, unable to generate newman runs.\nCause: RequestError: Error: Invalid URI "' + uri + '"');
+                thrownError = true;
+            }
+            expect(thrownError).to.be.true;
+        })
     })
 })
