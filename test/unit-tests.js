@@ -468,7 +468,7 @@ describe('newman-async-runner [unit]', async function (done) {
         it('sets proper reporter template')
         it('gives proper name to test report')
     })
-    describe('#getFiles', async function(){
+    describe('#getFiles', function(){
         let intialAmountOfFiles = 3;
         beforeEach('#getFiles() before each', async function () {
             await cleanTestDirectory();
@@ -552,15 +552,28 @@ describe('newman-async-runner [unit]', async function (done) {
             runner = new runner.NewmanRunner(optionsFactory());
             let result = await runner.checkApiCollections(uri);
 
-            expect(result.address).to.equal(uri);
-            expect(result.name).to.equal('yolo');
-            expect(result.folders[0]).to.equal('folder1');
-            expect(result.folders[1]).to.equal('folder1 Copy');
-            expect(result.folders[2]).to.equal('LUZEM');
+            expect(result.length).to.equal(1);
+            expect(result[0].address).to.equal(uri);
+            expect(result[0].name).to.equal('yolo');
+            expect(result[0].folders[0]).to.equal('folder1');
+            expect(result[0].folders[1]).to.equal('folder1 Copy');
+            expect(result[0].folders[2]).to.equal('LUZEM');
         })
-        it('returns multiple postman collection objects')
-        it('returns single postman collection object')
-        it('throws error when unable to fetch collection using given uri')
-        it('throws error when given uri request throws error')
+        it('returns multiple postman collection objects', async function(){
+            let uri = pmCollectionsEndpoint + pmApiKey;
+            let runner = new runnerFactory();
+            runner = new runner.NewmanRunner(optionsFactory());
+            let result = await runner.checkApiCollections(uri);
+
+            expect(result.length).to.equal(3);
+            expect(result[0].name).to.equal('yolo');
+            expect(result[0].folders[0]).to.equal('folder1');
+            expect(result[0].folders[1]).to.equal('folder1 Copy');
+            expect(result[0].folders[2]).to.equal('LUZEM');
+
+        })
+        // it('returns single postman collection object')
+        // it('throws error when unable to fetch collection using given uri')
+        // it('throws error when given uri request throws error')
     })
 })

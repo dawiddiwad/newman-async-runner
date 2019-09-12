@@ -71,12 +71,15 @@ module.exports = {
 			}
 
 			if (response.collection){
-				return this.handleSingle(response.collection);
+				return [this.handleSingle(response.collection)];
 			}
 			if (response.collections){
-				for (const collection of response.collections){
-					this.checkApiCollections('https://api.getpostman.com/collections/' + collection.uid + '?' + new URL(uri).searchParams.toString());
+				let collectionObjects = new Array();
+				for (let collection of response.collections){
+					collection = await this.checkApiCollections('https://api.getpostman.com/collections/' + collection.uid + '?' + new URL(uri).searchParams.toString());
+					collectionObjects.push(collection[0]);
 				}
+				return collectionObjects;
 			}
 		}
 
@@ -86,7 +89,7 @@ module.exports = {
 			}
 			let collectionsPath = this.options.folders.collections;
 			if (!fs.existsSync(collectionsPath)){
-				return [await this.checkApiCollections(collectionsPath)];
+				return await this.checkApiCollections(collectionsPath);
 			}
 			if (await fs.lstatSync(collectionsPath).isDirectory()){
 				let collectionObjects = new Array();
