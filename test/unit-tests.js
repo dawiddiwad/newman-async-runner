@@ -537,13 +537,27 @@ describe('newman-async-runner [unit]', async function (done) {
         })
     })
     describe('#checkApiCollections()', function(){
+        const pmApiKey = '?apikey=76daa939671b4014bea6737bf870e216';
+        const pmCollectionsEndpoint = 'https://api.getpostman.com/collections/';
         beforeEach('before each #checkApiCollections() test', async function(){
             cleanTestDirectory();
         })
         afterEach('after each #checkApiCollections() test', async function(){
             cleanTestDirectory();
         })
-        it('returns single postman collection object')
+        it('returns single postman collection object', async function(){
+            let pmCollectionUid = '5022740-1106110a-7550-48e9-a083-eaa5e9b65d7d';
+            let uri = pmCollectionsEndpoint + pmCollectionUid + pmApiKey;
+            let runner = new runnerFactory();
+            runner = new runner.NewmanRunner(optionsFactory());
+            let result = await runner.checkApiCollections(uri);
+
+            expect(result.address).to.equal(uri);
+            expect(result.name).to.equal('yolo');
+            expect(result.folders[0]).to.equal('folder1');
+            expect(result.folders[1]).to.equal('folder1 Copy');
+            expect(result.folders[2]).to.equal('LUZEM');
+        })
         it('returns multiple postman collection objects')
         it('returns single postman collection object')
         it('throws error when unable to fetch collection using given uri')

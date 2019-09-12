@@ -54,7 +54,7 @@ module.exports = {
 
 		async checkApiCollections(uri){
 			let response; try{
-				response = await request(uri);
+				response = await request(uri, {json: true});
 			} catch (error){
 				throw new Error('collections path: ' + uri + ' does not exist or is invalid, unable to generate newman runs.\nCause: ' + error.toString());
 			}
@@ -62,19 +62,19 @@ module.exports = {
 				throw new Error('collections path: ' + uri + ' does not exist or is invalid, unable to generate newman runs');
 			}
 
-			handleSingle = function(singleCollection){
+			this.handleSingle = function(singleCollection){
 				let collectionObject = new Collection(uri, singleCollection, singleCollection.info.name)
-				for (folder of singleCollection.item){
+				for (const folder of singleCollection.item){
 					collectionObject.folders.push(folder.name);
 				}
 				return collectionObject;
 			}
 
 			if (response.collection){
-				return handleSingle(response.collection);
+				return this.handleSingle(response.collection);
 			}
 			if (response.collections){
-				for (collection of response.collections){
+				for (const collection of response.collections){
 					this.checkApiCollections('https://api.getpostman.com/collections/' + collection.uid + '?' + new URL(uri).searchParams.toString());
 				}
 			}
