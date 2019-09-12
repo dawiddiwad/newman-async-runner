@@ -22,6 +22,7 @@ class File {
 }
 
 module.exports = {
+	request: request = require('request-promise'),
 	path: path = require('path'),
 	fs: fs = require('fs'),
 	async: async = require('async'),

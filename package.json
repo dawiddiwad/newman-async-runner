@@ -12,7 +12,9 @@
   "dependencies": {
     "async": "^3.1.0",
     "newman": "^4.5.4",
-    "newman-reporter-htmlfull": "github:dawiddiwad/newman-reporter-htmlfull#master"
+    "newman-reporter-htmlfull": "github:dawiddiwad/newman-reporter-htmlfull#master",
+    "request": "^2.88.0",
+    "request-promise": "^4.2.4"
   },
   "repository": {
     "type": "git",
