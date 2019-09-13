@@ -60,19 +60,19 @@ const expect = require('chai').expect;
 const runner = require('newman-async-runner').NewmanRunner;
 
 const UAT = {
-		folders:{
-			collections:'https://api.getpostman.com/collections/?apikey=YOUR_POSTMAN_API_KEY'
-		},
-		specific_collection_items_to_run: ['UAT_tests_folder'],
-		newmanOptions:{reporters: 'htmlfull'}
+	folders:
+		{collections:'https://api.getpostman.com/collections/?apikey=YOUR_POSTMAN_API_KEY'},
+	specific_collection_items_to_run: ['UAT_tests_folder'],
+	newmanOptions:
+		{reporters: 'htmlfull'}
 	};
 
 const SIT = {
-		folders:{
-			collections:'https://api.getpostman.com/collections/?apikey=YOUR_POSTMAN_API_KEY'
-		},
-		specific_collection_items_to_run: ['SIT_tests_folder'],
-		newmanOptions:{reporters: 'htmlfull'} 
+	folders:
+		{collections:'https://api.getpostman.com/collections/?apikey=YOUR_POSTMAN_API_KEY'},
+	specific_collection_items_to_run: ['SIT_tests_folder'],
+	newmanOptions:
+		{reporters: 'htmlfull'} 
 	};
 
 describe('My Application API tests', function(){
