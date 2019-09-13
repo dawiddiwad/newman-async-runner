@@ -69,14 +69,14 @@ module.exports = {
 			} else if (response.collection){
 				return [this.handleCollection(response.collection)];
 			} else if (response.collections){
-				let collectionObjects = newArray();
+				let collectionObjects = new Array();
 				for (let collection of response.collections){
 					collection = await this.fetchViaApi(this.pmCollectionsEndpoint + collection.uid + '?' + new URL(uri).searchParams.toString());
 					collectionObjects.push(collection.pop());
 				}
 				return collectionObjects.length ? collectionObjects : [undefined];
 			} else if (response.environment){
-				return [this.handleEnvironment(response.collection)];
+				return [this.handleEnvironment(response.environment)];
 			} else if (response.environments){
 				let environmentObjects = new Array();
 				for (let environment of response.environments){
