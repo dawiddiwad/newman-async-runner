@@ -32,6 +32,8 @@ module.exports = {
 			this.collectionRuns = new Array();
 			this.collectionRuns.results = new Array();
 			this.options = options;
+			this.pmCollectionsEndpoint = 'https://api.getpostman.com/collections/';
+			this.pmEnvironmentsEndpoint = 'https://api.getpostman.com/environments/';
 		}
 
 		setupFolders() {
