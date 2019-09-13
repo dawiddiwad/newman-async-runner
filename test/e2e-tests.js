@@ -3,6 +3,8 @@ import ('./test-utils');
 describe('newman-async-runner [e2e]', async function () {
     this.timeout(120000);
     let sandbox;
+    const pmCollectionsEndpoint = 'https://api.getpostman.com/collections/';
+    const pmEnvironmentsEndpoint = 'https://api.getpostman.com/environments/';
     describe('#non-data driven runs', function () {
         let collectionsAmount = 3;
         beforeEach('e2e test', async function () {
@@ -225,6 +227,50 @@ describe('newman-async-runner [e2e]', async function () {
 
             let reportFiles = await getReportsFrom(options.folders.reports);
             expect(reportFiles.length).to.equal(collectionsAmount * testFolders.length);
+        })
+    })
+    describe('#api runs', function(){
+        let apiKey;
+        let SingleCollectionUid;
+        let SingleEnvironmentUid;
+        before('before api runs tests', async function(){
+            apiKey = await getApiKey();
+            SingleCollectionUid = '5022740-bd0d91a1-56f1-4d8b-9392-7c001f17ee7b';
+            SingleEnvironmentUid = '5022740-59ab22de-0a26-4c81-af4e-ccc02d0d19c6';
+        })
+        it('runs for single collection and environment fetched via postman api', async function(){
+            await cleanTestDirectory();
+            let runner = runnerFactory();
+            runner = new runner.NewmanRunner({
+                folders: {
+                    collections: pmCollectionsEndpoint + SingleCollectionUid + apiKey,
+                    environments: pmEnvironmentsEndpoint + SingleEnvironmentUid + apiKey,
+                    reports: './test/reports/'},
+                newmanOptions: {reporters: 'htmlfull', timeoutRequest: 100}
+            });
+
+            let results = await runner.runTests();
+            expect(results.length).equals(1);
+            expect(results[0].summary.collection.name).equals('snippets');
+            expect(results[0].summary.environment.name).equals('UAT');
+            await cleanTestDirectory();
+        })
+        it('runs for all collections and environments fetched via postman api', async function(){
+            await cleanTestDirectory();
+            let runner = runnerFactory();
+            runner = new runner.NewmanRunner({
+                folders: {
+                    collections: pmCollectionsEndpoint + apiKey,
+                    environments: pmEnvironmentsEndpoint + apiKey,
+                    reports: './test/reports/'},
+                newmanOptions: {reporters: 'htmlfull', timeoutRequest: 100}
+            });
+
+            let results = await runner.runTests();
+            expect(results.length).equals(6);
+            expect(results[0].summary.collection.name).not.equals(results[2].summary.collection.name);
+            expect(results[0].summary.environment.name).not.equals(results[1].summary.environment.name);
+            await cleanTestDirectory();
         })
     })
 })    

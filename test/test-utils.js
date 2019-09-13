@@ -2,7 +2,7 @@ if (true){
     console.log = function () {
         return;
     }
-    var CLIshush = {reporters: 'htmlfull'};
+    var CLIshush = {reporters: 'htmlfull', timeoutRequest: 100};
 }
 
 process.on('unhandledRejection', function(err) {
