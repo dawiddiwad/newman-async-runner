@@ -55,6 +55,7 @@ Runner can be easily paired with popular test frameworks like ```Mocha``` or ```
 Simple ```Mocha``` example with ```chai```:<br>
 
 ```javascript
+console.log = function(){};
 const expect = require('chai').expect;
 const runner = require('newman-async-runner').NewmanRunner;
 
@@ -62,19 +63,21 @@ const UAT = {
 		folders:{
 			collections:'https://api.getpostman.com/collections/?apikey=YOUR_POSTMAN_API_KEY'
 		},
-		specific_collection_items_to_run: ['UAT_tests_folder'] 
+		specific_collection_items_to_run: ['UAT_tests_folder'],
+		newmanOptions:{reporters: 'htmlfull'}
 	};
 
 const SIT = {
 		folders:{
 			collections:'https://api.getpostman.com/collections/?apikey=YOUR_POSTMAN_API_KEY'
 		},
-		specific_collection_items_to_run: ['SIT_tests_folder'] 
+		specific_collection_items_to_run: ['SIT_tests_folder'],
+		newmanOptions:{reporters: 'htmlfull'} 
 	};
 
 describe('My Application API tests', function(){
 	this.timeout(10000)
-
+	
 	it('passes all UAT tests', async function(){
 		for (const eachResult of await new runner(UAT).runTests()){
 			expect(eachResult.summary.run.failures).to.be.empty;
@@ -86,8 +89,15 @@ describe('My Application API tests', function(){
 			expect(eachResult.summary.run.failures).to.be.empty;
 		}
 	})
-
 })
+```
+...and the result should be something like:
+```cli
+  My Application API tests
+    √ passes all UAT tests (2989ms)
+    √ passes all SIT tests (2137ms)
+
+  2 passing (5s)
 ```
 
   
