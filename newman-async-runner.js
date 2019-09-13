@@ -64,11 +64,9 @@ module.exports = {
 			} catch (error){
 				throw new Error('path: ' + uri + ' does not exist or is invalid, unable to generate newman runs.\nCause: ' + error.toString());
 			}
-			if (!response){
-				throw new Error('path: ' + uri + ' does not exist or is invalid, unable to generate newman runs');
-			} else if (response.collection){
+			if (response && response.collection){
 				return [this.handleCollection(response.collection)];
-			} else if (response.collections){
+			} else if (response && response.collections){
 				let collectionObjects = new Array();
 				for (let collection of response.collections){
 					collection = await this.fetchViaApi(this.pmCollectionsEndpoint + collection.uid + '?' + new URL(uri).searchParams.toString());
@@ -85,7 +83,7 @@ module.exports = {
 				}
 				return environmentObjects.length ? environmentObjects : [undefined];
 			} else {
-				throw new Error('path: ' + uri + ' does not exist or is invalid, unable to generate newman runs');
+				throw new Error('path: ' + uri + ' does not exist or is invalid, unable to generate newman runs.');
 			}
 		}
 

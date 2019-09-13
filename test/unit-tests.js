@@ -2,8 +2,8 @@ import ('./test-utils');
 
 describe('newman-async-runner [unit]', async function (done) {
     this.timeout(10000);
-    const pmApiKey = '?apikey=76daa939671b4014bea6737bf870e216';
     const pmCollectionsEndpoint = 'https://api.getpostman.com/collections/';
+    const pmEnvironmentsEndpoint = 'https://api.getpostman.com/environments/';
     let
         assert,
         _nar,
@@ -496,4 +496,113 @@ describe('newman-async-runner [unit]', async function (done) {
             expect(didThrowError).to.be.true;
         })
     })
+    describe('#fetchViaApi', function(){
+        let apiKey;
+        let SingleCollectionUid;
+        let SingleEnvironmentUid;
+        before('before #fetchViaApi() tests', async function(){
+            apiKey = await getApiKey();
+            SingleCollectionUid = '5022740-bd0d91a1-56f1-4d8b-9392-7c001f17ee7b';
+            SingleEnvironmentUid = '5022740-59ab22de-0a26-4c81-af4e-ccc02d0d19c6';
+        })
+        it('fetches single collection', async function(){
+            const collectionPath = pmCollectionsEndpoint + SingleCollectionUid + apiKey;
+            let runner = runnerFactory();
+            runner = new runner.NewmanRunner({folders: {collections: collectionPath}});
+
+            const result = await runner.fetchViaApi(collectionPath);
+            expect(result).to.be.a('Array');
+            expect(result.length).equals(1);
+            expect(result[0].content).to.have.property('info');
+        })
+        it('fetches multiple collections', async function(){
+            const collectionPath = pmCollectionsEndpoint + apiKey;
+            let runner = runnerFactory();
+            runner = new runner.NewmanRunner({folders: {collections: collectionPath}});
+
+            const result = await runner.fetchViaApi(collectionPath);
+            expect(result).to.be.a('Array');
+            expect(result.length).equals(3);
+            expect(result[0].name).not.equals(result[1].name);
+        })
+        it('fetches single environment', async function(){
+            const environmentPath = pmEnvironmentsEndpoint + SingleEnvironmentUid + apiKey;
+            let runner = runnerFactory();
+            runner = new runner.NewmanRunner({folders: {collections: environmentPath}});
+
+            const result = await runner.fetchViaApi(environmentPath);
+            expect(result).to.be.a('Array');
+            expect(result.length).equals(1);
+            expect(result[0].content).to.have.property('name');
+            expect(result[0].content).not.to.have.property('info');
+        })
+        it('fetches multiple environments', async function(){
+            const environmentPath = pmEnvironmentsEndpoint + apiKey;
+            let runner = runnerFactory();
+            runner = new runner.NewmanRunner({folders: {collections: environmentPath}});
+
+            const result = await runner.fetchViaApi(environmentPath);
+            expect(result).to.be.a('Array');
+            expect(result.length).equals(2);
+            expect(result[0].name).not.equals(result[1].name);
+        })
+        it('throws error on request exception', async function(){
+            const uri = 'dummy';
+            let runner = runnerFactory();
+            runner = new runner.NewmanRunner({folders: {collections: uri}});
+
+            let hasThrownError = false;
+            try{
+                await runner.fetchViaApi(uri);
+            } catch(error){
+                expect(error).to.be.a('Error');
+                expect(error.message).equals('path: ' + uri +' does not exist or is invalid, unable to generate newman runs.\nCause: RequestError: Error: Invalid URI \"' + uri + '\"');
+                hasThrownError = true;
+            }
+            expect(hasThrownError).to.be.true;
+        })
+        it('throws error on invalid uri', async function(){
+            const uri = 'https://www.google.com';
+            let runner = runnerFactory();
+            runner = new runner.NewmanRunner({folders: {collections: uri}});
+
+            let hasThrownError = false;
+            try{
+                await runner.fetchViaApi(uri);
+            } catch(error){
+                expect(error).to.be.a('Error');
+                expect(error.message).equals('path: ' + uri +' does not exist or is invalid, unable to generate newman runs.');
+                hasThrownError = true;
+            }
+            expect(hasThrownError).to.be.true;
+        })
+    })
+    describe('#fetchViaFileSystem', function(){
+        it('fetches single collection')
+        it('fetches multiple collections')
+        it('fetches single environment')
+        it('fetches multiple environments')
+        it('throws error on request exception')
+        it('throws error on invalid file content')
+        it('throws error on invalid path')
+    })
+    describe('#handleCollection', function(){
+        it('returns new Collections object for given collection json')
+    })
+    describe('#handleEnvironment', function(){
+        it('returns new Environment object for given environment json')
+    })
+    describe('#setupCollections', function(){
+        it('runs for each data file')
+        it('runs for each collection')
+        it('runs for each environment')
+        it('runs for selected items')
+        it('runs for parallel items')
+        it('runs for all items')
+    })
+    describe('#runTests', function(){
+        it('triggers async runs setup and then launches tests')
+        it('returns result after all runs are completed')
+    })
+
 })

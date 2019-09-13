@@ -10,6 +10,7 @@ process.on('unhandledRejection', function(err) {
 }),
 
 module.exports = {
+    request: request = require('request-promise'),
     chai: chai = require('chai'),
     sinon: sinon = require('sinon'),
     expect: expect = chai.expect,
@@ -46,6 +47,14 @@ module.exports = {
             this.environments(amount, options);
             this.data(amount, options);
             this.templates(options);
+        }
+    },
+
+    getApiKey: getApiKey = async function () {
+        try{
+            return '?apikey=' + await JSON.parse(fs.readFileSync('./test/testdata/postmanApiKey.json')).key;
+        } catch {
+            throw new Error('unable to open postmanApiKey.json file')
         }
     },
 
