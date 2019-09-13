@@ -8,8 +8,9 @@ class Collection {
 }
 
 class Environment {
-	constructor(address, name) {
+	constructor(address, content, name) {
 		this.address = address;
+		this.content = content;
 		this.name = name;
 	}
 }
@@ -89,7 +90,7 @@ module.exports = {
 				});
 				for (let c of colections) {
 					const collection = await JSON.parse(fs.readFileSync(collectionsPath + c));
-					let collectionObject = new Collection(collectionsPath + c, undefined, collection.info.name);
+					let collectionObject = new Collection(collectionsPath + c, collection, collection.info.name);
 					for (const folder of collection.item) {
 						collectionObject.folders.push(folder.name);
 					}
@@ -99,7 +100,7 @@ module.exports = {
 			} else if (await fs.lstatSync(collectionsPath).isFile()) {
 				if (path.extname(collectionsPath).toLowerCase() === '.json'){
 					const collection = await JSON.parse(fs.readFileSync(collectionsPath));
-					let collectionObject = new Collection(collectionsPath, undefined, collection.info.name);
+					let collectionObject = new Collection(collectionsPath, collection, collection.info.name);
 					for (const folder of collection.item) {
 						collectionObject.folders.push(folder.name);
 					}
@@ -118,20 +119,18 @@ module.exports = {
 				throw new Error('environments path: ' + environmentsPath + ' does not exist or is invalid, unable to generate newman runs');
 			} else if (await fs.lstatSync(environmentsPath).isDirectory()){
 				let environmentObjects = new Array();
-				if (this.options.folders.environments) {
-					const environments = fs.readdirSync(this.options.folders.environments).filter(function (e) {
-						return path.extname(e).toLowerCase() === '.json';
-					});
-					for (const e of environments) {
-						environmentObjects.push(new Environment(this.options.folders.environments + e,
-							await JSON.parse(fs.readFileSync(this.options.folders.environments + e)).name));
-					}
+				const environments = fs.readdirSync(environmentsPath).filter(function (e) {
+					return path.extname(e).toLowerCase() === '.json';
+				});
+				for (const e of environments) {
+					const environment = await JSON.parse(fs.readFileSync(environmentsPath + e));
+					environmentObjects.push(new Environment(environmentsPath + e, environment, environment.name));
 				}
 				return environmentObjects.length ? environmentObjects : [undefined];
 			} else if (await fs.lstatSync(environmentsPath).isFile()){
 				if (path.extname(environmentsPath).toLowerCase() === '.json'){
 					const environment = await JSON.parse(fs.readFileSync(environmentsPath));
-					const environmentObject = new Environment(environmentsPath, environment.name);
+					const environmentObject = new Environment(environmentsPath, environment, environment.name);
 					return [environmentObject];
 				}
 			} else {
@@ -195,10 +194,10 @@ module.exports = {
 				new Object();
 
 			options.collection = options.collection ? options.collection :
-				(_collection ? _collection.address : undefined);
+				(_collection ? _collection.content : undefined);
 
 			options.environment = options.environment ? options.environment :
-				(_environment ? _environment.address : undefined);
+				(_environment ? _environment.content : undefined);
 
 			options.folder = options.folder ? options.folder :
 				(_folder ? _folder : undefined);
