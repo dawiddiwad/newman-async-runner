@@ -144,7 +144,7 @@ const runnerOptions = {
   
 ```specific_collection_items_to_run``` : *`optional`* - specific collection(s) folder or item names to run from all collections or signle collection located under options.collections path. If not used runner will run all folders and items in collection(s).<br/><br/>
 
-```parallelFolderRuns``` : *`optional`* will atomize each collection into separate folder and item runs. This may speed-up whole collection execution time but may also clog it if there are too much runs. It will also prodcue separate report files since these produces separate run for each item. <br/><br/>
+```parallelFolderRuns``` : *`optional`* will atomize each collection into separate folder and item runs. This may speed-up whole collection execution time but may also clog it if there are too many runs. It will also prodcue separate report files since these produces separate run for each item. <br/><br/>
 
 ```newmanOptions```:*`optional`* this object will pass-trough any standard [nemwan.run() options](https://www.npmjs.com/package/newman#api-reference). In case of conflict this will overwrite options used by *newman-async-runner*.<br><br>
  
@@ -155,7 +155,7 @@ const runnerOptions = {
 
 ## Roadmap
 
- - online collections, environments fetching trough Postman API (wip)
+ - fetch collection, environment and data files trough any http raw data source
 
   
 
