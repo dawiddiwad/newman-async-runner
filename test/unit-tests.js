@@ -356,8 +356,8 @@ describe('newman-async-runner [unit]', async function (done) {
             sinon.assert.calledOnce(collectionRunsSpy);
 
             await async.parallel(NAR.collectionRuns, function () { });
-            expect(runsSpy.args[0][0].collection).to.equal(collections[0].address);
-            expect(runsSpy.args[0][0].environment).to.equal(environments[0].address);
+            expect(runsSpy.args[0][0].collection).to.equal(collections[0].content);
+            expect(runsSpy.args[0][0].environment).to.equal(environments[0].content);
             expect(runsSpy.args[0][0].iterationData).to.equal(dataFiles[0].address);
         })
         it('correctly handles non-environment runs', async function () {
@@ -376,7 +376,7 @@ describe('newman-async-runner [unit]', async function (done) {
             sinon.assert.calledOnce(collectionRunsSpy);
 
             await async.parallel(NAR.collectionRuns, function () { });
-            expect(runsSpy.args[0][0].collection).to.equal(collections[0].address);
+            expect(runsSpy.args[0][0].collection).to.equal(collections[0].content);
             expect(runsSpy.args[0][0].environment).to.equal(undefined);
             expect(runsSpy.args[0][0].iterationData).to.equal(dataFiles[0].address);
         })

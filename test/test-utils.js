@@ -83,7 +83,7 @@ module.exports = {
         let testData = new Array();
         while (amount) {
             let randomName = Math.floor((Math.random() * 9999) + 1) + '_env';
-            testData.push({ address: './environments folder/' + randomName + '.json', name: randomName });
+            testData.push({ address: './environments folder/' + randomName + '.json', content: 'test content', name: randomName });
             amount--;
         }
         return testData;

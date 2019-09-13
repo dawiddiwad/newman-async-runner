@@ -26,7 +26,7 @@ describe('newman-async-runner [e2e]', async function () {
             let runResults = await runner.runTests();
             expect(_runs.args.length).to.equal(collectionsAmount);
             for (let i = 0; i < collectionsAmount; i++) {
-                expect(_runs.args[i][0].collection).to.equal(options.folders.collections + (i + 1) + '_col.json');
+                expect(_runs.args[i][0].collection.info.name).to.equal('yolo');
                 expect(_runs.args[i][0].folder).to.be.undefined;
             }
 
@@ -48,7 +48,7 @@ describe('newman-async-runner [e2e]', async function () {
             await runner.runTests();
             expect(_runs.args.length).to.equal(collectionsAmount);
             for (let i = 0; i < collectionsAmount; i++) {
-                expect(_runs.args[i][0].collection).to.equal(options.folders.collections + (i + 1) + '_col.json');
+                expect(_runs.args[i][0].collection.info.name).to.equal('yolo');
                 expect(_runs.args[i][0].folder).to.be.undefined;
             }
 
@@ -67,8 +67,8 @@ describe('newman-async-runner [e2e]', async function () {
             let runner = new _mocked.NewmanRunner(options);
             await runner.runTests();
             for (let i = 0, c = 0, e = 0; i < collectionsAmount * collectionsAmount; i++ , e++) {
-                expect(_runs.args[i][0].collection).to.equal(options.folders.collections + (c + 1) + '_col.json');
-                expect(_runs.args[i][0].environment).to.equal(options.folders.environments + (e + 1) + '_env.json');
+                expect(_runs.args[i][0].collection.info.name).to.equal('yolo');
+                expect(_runs.args[i][0].environment.name).to.equal('UAT');
                 expect(_runs.args[i][0].folder).to.be.undefined;
                 if ((i + 1) % collectionsAmount == 0) { c++; e = -1 }
             }
@@ -86,8 +86,8 @@ describe('newman-async-runner [e2e]', async function () {
             let runner = new _mocked.NewmanRunner(options);
             await runner.runTests();
             for (let i = 0, c = 0, e = 0, f = 0; i < collectionsAmount * collectionsAmount * options.specific_collection_items_to_run.length; i++ , f++) {
-                expect(_runs.args[i][0].collection).to.equal(options.folders.collections + (c + 1) + '_col.json');
-                expect(_runs.args[i][0].environment).to.equal(options.folders.environments + (e + 1) + '_env.json');
+                expect(_runs.args[i][0].collection.info.name).to.equal('yolo');
+                expect(_runs.args[i][0].environment.name).to.equal('UAT');
                 expect(_runs.args[i][0].folder).to.equal(options.specific_collection_items_to_run[f]);
                 if ((i + 1) % (collectionsAmount * options.specific_collection_items_to_run.length) == 0) { c++; e = -1 }
                 if ((i + 1) % options.specific_collection_items_to_run.length == 0) { f = -1; e++; }
@@ -107,8 +107,8 @@ describe('newman-async-runner [e2e]', async function () {
             await runner.runTests();
 
             for (let i = 0, c = 1, e = 1, f = 1; i < collectionsAmount * collectionsAmount * 3; i++) {
-                expect(_runs.args[i][0].collection).to.equal(options.folders.collections + c + '_col.json');
-                expect(_runs.args[i][0].environment).to.equal(options.folders.environments + e + '_env.json');
+                expect(_runs.args[i][0].collection.info.name).to.equal('yolo');
+                expect(_runs.args[i][0].environment.name).to.equal('UAT');
                 expect(_runs.args[i][0].folder).to.equal(testFolders[(f - 1)]);
                 if ((i + 1) % 3 == 0) { f = 0; } f++;
                 if ((i + 1) % (collectionsAmount * collectionsAmount) == 0) { c++ , e = 0 }
@@ -142,7 +142,7 @@ describe('newman-async-runner [e2e]', async function () {
             let runner = new _mocked.NewmanRunner(options);
             await runner.runTests();
             for (let i = 0, c = 1, d = 1; i < collectionsAmount * collectionsAmount; i++ , c++) {
-                expect(_runs.args[i][0].collection).to.equal(options.folders.collections + (c) + '_col.json');
+                expect(_runs.args[i][0].collection.info.name).to.equal('yolo');
                 expect(_runs.args[i][0].iterationData).to.equal(options.folders.data + (d) + '_data.json');
                 expect(_runs.args[i][0].folder).to.be.undefined;
                 if ((i + 1) % (collectionsAmount) == 0) { c = 0; d++ }
@@ -163,8 +163,8 @@ describe('newman-async-runner [e2e]', async function () {
             await runner.runTests();
             for (let i = 0, c = 0, e = 0, d = 0; i < collectionsAmount * collectionsAmount * collectionsAmount; i++ , e++) {
                 console.log(_runs.args[i][0].collection + ' ' + _runs.args[i][0].environment + ' ' + _runs.args[i][0].iterationData);
-                expect(_runs.args[i][0].collection).to.equal(options.folders.collections + (c + 1) + '_col.json');
-                expect(_runs.args[i][0].environment).to.equal(options.folders.environments + (e + 1) + '_env.json');
+                expect(_runs.args[i][0].collection.info.name).to.equal('yolo');
+                expect(_runs.args[i][0].environment.name).to.equal('UAT');
                 expect(_runs.args[i][0].iterationData).to.equal(options.folders.data + (d + 1) + '_data.json');
                 expect(_runs.args[i][0].folder).to.be.undefined;
                 if ((i + 1) % (collectionsAmount * collectionsAmount) == 0) { c = 0; e = -1; d++; continue; }
@@ -190,8 +190,8 @@ describe('newman-async-runner [e2e]', async function () {
             let runner = new _mocked.NewmanRunner(options);
             await runner.runTests();
             expect(_runs.args.length).to.equal(1);
-            expect(_runs.args[0][0].collection).to.equal(options.folders.collections);
-            expect(_runs.args[0][0].environment).to.equal(options.folders.environments);
+            expect(_runs.args[0][0].collection.info.name).to.equal('yolo');
+            expect(_runs.args[0][0].environment.name).to.equal('UAT');
             expect(_runs.args[0][0].iterationData).to.equal(options.folders.data);
             expect(_runs.args[0][0].folder).to.be.undefined;
 
@@ -213,8 +213,8 @@ describe('newman-async-runner [e2e]', async function () {
             await runner.runTests();
 
             for (let i = 0, c = 1, e = 1, f = 1, d = 1; i < collectionsAmount * collectionsAmount * 3 * 3; i++) {
-                expect(_runs.args[i][0].collection).to.equal(options.folders.collections + c + '_col.json');
-                expect(_runs.args[i][0].environment).to.equal(options.folders.environments + e + '_env.json');
+                expect(_runs.args[i][0].collection.info.name).to.equal('yolo');
+                expect(_runs.args[i][0].environment.name).to.equal('UAT');
                 expect(_runs.args[i][0].iterationData).to.equal(options.folders.data + d + '_data.json');
                 expect(_runs.args[i][0].folder).to.equal(testFolders[(f - 1)]);
                 if ((i + 1) % 3 == 0) { f = 0; } f++;
