@@ -17,7 +17,7 @@ newman async runner lets you run your postman *collections* asychnrounously (fir
 
 It uses `htmlfull` reporter - however this can be easily override by passing custom ```newmanOptions```,  see [API](#api) 
 
-## Instalation
+## Installation
 
 ```
 
@@ -41,9 +41,9 @@ const runnerOptions = {
 			reports: './reports/', 
 			data: './data/',
 		},
-		newmanOptions = {
+		newmanOptions: {
 			timeoutRequest: 10000
-		};
+		}
 	};
 
 new runner.NewmanRunner(runnerOptions).runTests();
@@ -55,42 +55,45 @@ Runner can be easily paired with popular test frameworks like ```Mocha``` or ```
 Simple ```Mocha``` example with ```chai```:<br>
 
 ```javascript
-const
-	expect = require('chai').expect,
-	runner = require('newman-async-runner').NewmanRunner;
+const expect = require('chai').expect;
+const runner = require('newman-async-runner').NewmanRunner;
 
-const 
-	UAT = {
+const UAT = {
 		folders:  {
-			collections:'./UAT/collections/'
-		}
-	},
-	SIT = {
+			collections:'https://api.getpostman.com/collections/?apikey=YOUR_POSTMAN_API_KEY'
+		},
+		specific_collection_items_to_run: ['UAT_tests_folder'] 
+	};
+
+const SIT = {
 		folders: {
-			collections:'./SIT/collections/'
-		}
+			collections:'https://api.getpostman.com/collections/?apikey=YOUR_POSTMAN_API_KEY'
+		},
+		specific_collection_items_to_run: ['SIT_tests_folder'] 
 	};
 
 describe('My Application API tests', function(){
+	this.timeout(10000)
 
 	it('passes all UAT tests', async function(){
-		for (let singleRun of await new runner(UAT).runTests()){
-			expect(singleRun.error).to.be.null;
+		for (const eachResult of await new runner(UAT).runTests()){
+			expect(eachResult.summary.run.failures).to.be.empty;
 		}
 	})
 
 	it('passes all SIT tests', async function(){
-		for (let singleRun of await new runner(SIT).runTests()){
-			expect(singleRun.error).to.be.null;
+		for (const eachResult of await new runner(SIT).runTests()){
+			expect(eachResult.summary.run.failures).to.be.empty;
 		}
 	})
+
 })
 ```
 
   
 ## API
 ### ```runnerOptions```:
-example of all available options:
+example of available options:
 ```javascript
 const runnerOptions = {
 	folders: {
@@ -103,10 +106,10 @@ const runnerOptions = {
 	anonymizeFilter: /(?<=\<password:\>)(.*?)(?=\<\\password\>)/g,
 	specific_collection_items_to_run: ['folder 1', 'folder 2'],
 	parallelFolderRuns: false,
-	newmanOptions = {
+	newmanOptions: {
 		color: 'off',
 		timeoutRequest: 10000
-	};
+	}
 };
 ```
 
