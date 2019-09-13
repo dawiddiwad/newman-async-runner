@@ -582,7 +582,6 @@ describe('newman-async-runner [unit]', async function (done) {
         it('fetches multiple collections')
         it('fetches single environment')
         it('fetches multiple environments')
-        it('throws error on request exception')
         it('throws error on invalid file content')
         it('throws error on invalid path')
     })
