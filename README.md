@@ -59,14 +59,14 @@ const expect = require('chai').expect;
 const runner = require('newman-async-runner').NewmanRunner;
 
 const UAT = {
-		folders:  {
+		folders:{
 			collections:'https://api.getpostman.com/collections/?apikey=YOUR_POSTMAN_API_KEY'
 		},
 		specific_collection_items_to_run: ['UAT_tests_folder'] 
 	};
 
 const SIT = {
-		folders: {
+		folders:{
 			collections:'https://api.getpostman.com/collections/?apikey=YOUR_POSTMAN_API_KEY'
 		},
 		specific_collection_items_to_run: ['SIT_tests_folder'] 
