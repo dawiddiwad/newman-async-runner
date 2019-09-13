@@ -62,7 +62,7 @@ const runner = require('newman-async-runner').NewmanRunner;
 const UAT = {
 	folders:
 		{collections:'https://api.getpostman.com/collections/?apikey=YOUR_POSTMAN_API_KEY'},
-	specific_collection_items_to_run: ['UAT_tests_folder'],
+	specific_collection_items_to_run: ['test_folder_A', 'test_folder_B'],
 	newmanOptions:
 		{reporters: 'htmlfull'}
 	};
@@ -70,7 +70,7 @@ const UAT = {
 const SIT = {
 	folders:
 		{collections:'https://api.getpostman.com/collections/?apikey=YOUR_POSTMAN_API_KEY'},
-	specific_collection_items_to_run: ['SIT_tests_folder'],
+	specific_collection_items_to_run: ['test_folder_C', 'test_folder_D'],
 	newmanOptions:
 		{reporters: 'htmlfull'} 
 	};
