@@ -27,6 +27,7 @@ describe('newman-async-runner [e2e]', async function () {
             expect(_runs.args.length).to.equal(collectionsAmount);
             for (let i = 0; i < collectionsAmount; i++) {
                 expect(_runs.args[i][0].collection).to.equal(options.folders.collections + (i + 1) + '_col.json');
+                expect(_runs.args[i][0].folder).to.be.undefined;
             }
 
             let reportFiles = await getReportsFrom(options.folders.reports);
@@ -48,6 +49,7 @@ describe('newman-async-runner [e2e]', async function () {
             expect(_runs.args.length).to.equal(collectionsAmount);
             for (let i = 0; i < collectionsAmount; i++) {
                 expect(_runs.args[i][0].collection).to.equal(options.folders.collections + (i + 1) + '_col.json');
+                expect(_runs.args[i][0].folder).to.be.undefined;
             }
 
             let reportFiles = await getReportsFrom(options.folders.reports);
@@ -59,6 +61,7 @@ describe('newman-async-runner [e2e]', async function () {
             let _mocked = runnerFactory();
             await copyTest.environments(collectionsAmount, options);
             delete options.specific_collection_items_to_run;
+            delete options.parallelFolderRuns;
 
             let _runs = sandbox.spy(_mocked.newman, 'run');
             let runner = new _mocked.NewmanRunner(options);
@@ -66,6 +69,7 @@ describe('newman-async-runner [e2e]', async function () {
             for (let i = 0, c = 0, e = 0; i < collectionsAmount * collectionsAmount; i++ , e++) {
                 expect(_runs.args[i][0].collection).to.equal(options.folders.collections + (c + 1) + '_col.json');
                 expect(_runs.args[i][0].environment).to.equal(options.folders.environments + (e + 1) + '_env.json');
+                expect(_runs.args[i][0].folder).to.be.undefined;
                 if ((i + 1) % collectionsAmount == 0) { c++; e = -1 }
             }
 
@@ -76,6 +80,7 @@ describe('newman-async-runner [e2e]', async function () {
             let options = optionsFactory();
             let _mocked = runnerFactory();
             await copyTest.environments(collectionsAmount, options);
+            delete options.parallelFolderRuns;
 
             let _runs = sandbox.spy(_mocked.newman, 'run');
             let runner = new _mocked.NewmanRunner(options);
@@ -131,6 +136,7 @@ describe('newman-async-runner [e2e]', async function () {
             let _mocked = runnerFactory();
             await copyTest.data(collectionsAmount, options);
             delete options.specific_collection_items_to_run;
+            delete options.parallelFolderRuns;
 
             let _runs = sandbox.spy(_mocked.newman, 'run');
             let runner = new _mocked.NewmanRunner(options);
@@ -138,6 +144,7 @@ describe('newman-async-runner [e2e]', async function () {
             for (let i = 0, c = 1, d = 1; i < collectionsAmount * collectionsAmount; i++ , c++) {
                 expect(_runs.args[i][0].collection).to.equal(options.folders.collections + (c) + '_col.json');
                 expect(_runs.args[i][0].iterationData).to.equal(options.folders.data + (d) + '_data.json');
+                expect(_runs.args[i][0].folder).to.be.undefined;
                 if ((i + 1) % (collectionsAmount) == 0) { c = 0; d++ }
             }
 
@@ -159,6 +166,7 @@ describe('newman-async-runner [e2e]', async function () {
                 expect(_runs.args[i][0].collection).to.equal(options.folders.collections + (c + 1) + '_col.json');
                 expect(_runs.args[i][0].environment).to.equal(options.folders.environments + (e + 1) + '_env.json');
                 expect(_runs.args[i][0].iterationData).to.equal(options.folders.data + (d + 1) + '_data.json');
+                expect(_runs.args[i][0].folder).to.be.undefined;
                 if ((i + 1) % (collectionsAmount * collectionsAmount) == 0) { c = 0; e = -1; d++; continue; }
                 if ((i + 1) % collectionsAmount == 0) { c++; e = -1 }
             }
@@ -185,6 +193,7 @@ describe('newman-async-runner [e2e]', async function () {
             expect(_runs.args[0][0].collection).to.equal(options.folders.collections);
             expect(_runs.args[0][0].environment).to.equal(options.folders.environments);
             expect(_runs.args[0][0].iterationData).to.equal(options.folders.data);
+            expect(_runs.args[0][0].folder).to.be.undefined;
 
             let reportFiles = await getReportsFrom(options.folders.reports);
             expect(reportFiles.length).to.equal(1);
