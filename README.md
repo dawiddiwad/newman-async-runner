@@ -112,10 +112,12 @@ const runnerOptions = {
 		reports: './reports/', 
 		data: './data/',
 		templates: './templates/'},
+
 	reporter_template: 'htmlreqres.hbs',
 	anonymizeFilter: /(?<=\<password:\>)(.*?)(?=\<\\password\>)/g,
 	specific_collection_items_to_run: ['folder 1', 'folder 2'],
 	parallelFolderRuns: false,
+	
 	newmanOptions: {
 		color: 'off',
 		timeoutRequest: 10000
