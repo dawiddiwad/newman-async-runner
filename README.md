@@ -123,7 +123,7 @@ const runnerOptions = {
 };
 ```
 
-##### ```folders``` :<br/>
+##### ```folders``` : *`MANDATORY`* *`object`*<br/>
 
 ```-> collections``` : *`MANDATORY`* *`string`* local path or online uri to collections folder or single file.<br/>
 
