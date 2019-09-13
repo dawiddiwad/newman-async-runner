@@ -3,7 +3,7 @@
 
 # Newman Async Runner
 
-newman async runner lets you run your local and online (API) postman *collections* asychnrounously as all-against-all matrix for:<br/>
+newman async runner lets you run your local and online (API) postman *collections* asynchronously as all-against-all matrix for:<br/>
 
 ` -> collections or their specific folders/items`<br/>
 
@@ -125,28 +125,28 @@ const runnerOptions = {
 
 ##### ```folders``` :<br/>
 
-```-> collections``` : *`MANDATORY`* path or uri to collections folder or single file.<br/>
+```-> collections``` : *`MANDATORY`* *`string`* local path or online uri to collections folder or single file.<br/>
 
-```-> environments``` : *`optional`* path or uri to environments folder or single file.<br/>
+```-> environments``` : *`optional`* *`string`* local path or online uri to environments folder or single file.<br/>
 
-```-> reports``` : *`optional`* local path to reports output folder.<br/>
+```-> reports``` : *`optional`* *`string`* local path to reports output folder.<br/>
 
-```-> data``` : *`optional`* loacl path to test run iteration data folder or single file.<br/>
+```-> data``` : *`optional`* *`string`* local path to test run iteration data folder or single file.<br/>
 
-```-> templates``` : *`optional`* local path to `htmlfull` templates folder.<br/><br/>
-
-  
-```reporter_template``` : *`optional`* - `htmlfull` reporter specific template filename located in local options.templates folder. If not used runner will use default ```htmlfull``` template.<br/><br/>
+```-> templates``` : *`optional`* *`string`* local path to `htmlfull` templates folder.<br/><br/>
 
   
-```anonymizeFilter``` : *`optional`* - report file anonymize regex filter. Runner will put *** in place of matching groups. If not used runner will not anonymize reports.<br/><br/>
+```reporter_template``` : *`optional`* *`string`* - `htmlfull` reporter specific template filename located in local options.templates folder. If not used runner will use default ```htmlfull``` template.<br/><br/>
 
   
-```specific_collection_items_to_run``` : *`optional`* - specific collection(s) folder or item names to run from all collections or signle collection located under options.collections path. If not used runner will run all folders and items in collection(s).<br/><br/>
+```anonymizeFilter``` : *`optional`* *`js regex expression`* - report file anonymize regex filter. Runner will put *** in place of matching groups. If not used runner will not anonymize reports.<br/><br/>
 
-```parallelFolderRuns``` : *`optional`* will atomize each collection into separate folder and item runs. This may speed-up whole collection execution time but may also clog it if there are too many runs. It will also prodcue separate report files since these produces separate run for each item. <br/><br/>
+  
+```specific_collection_items_to_run``` : *`optional`* *`string array`* - specific collection(s) folder or item names to run from all collections or single collection located under options.collections path. If not used runner will run all folders and items in collection(s).<br/><br/>
 
-```newmanOptions```:*`optional`* this object will pass-trough any standard [nemwan.run() options](https://www.npmjs.com/package/newman#api-reference). In case of conflict this will overwrite options used by *newman-async-runner*.<br><br>
+```parallelFolderRuns``` : *`optional`* *`boolean`* will atomize each collection into separate folder and item runs. This may speed-up whole collection execution time but may also clog it if there are too many runs. It will also prodcue separate report files since these produces separate run for each item. <br/><br/>
+
+```newmanOptions```:*`optional`* *`object`* this will pass-trough any standard [nemwan.run() options](https://www.npmjs.com/package/newman#api-reference). In case of conflict it overwrites options used by *newman-async-runner*.<br><br>
  
 
 ### ```runnerMethods```:
