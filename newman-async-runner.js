@@ -205,7 +205,7 @@ module.exports = {
 			if (this.options.specific_collection_items_to_run && !this.options.specific_collection_items_to_run.includes(options.folder)) {
 				return;
 			}
-			if (this.options.parallelFolderRuns == false && !this.options.specific_collection_items_to_run) {
+			if (!this.options.parallelFolderRuns && !this.options.specific_collection_items_to_run) {
 				delete options.folder;
 			}
 			if (!this.options.reporter_template) {
