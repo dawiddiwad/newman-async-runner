@@ -3,7 +3,7 @@
 
 # Newman Async Runner
 
-newman async runner lets you run your postman *collections* asychnrounously (fire runs at once) as all-against-all matrix for:<br/>
+newman async runner lets you run your local and online (API) postman *collections* asychnrounously as all-against-all matrix for:<br/>
 
 ` -> collections or their specific folders/items`<br/>
 
@@ -125,28 +125,28 @@ const runnerOptions = {
 
 ##### ```folders``` :<br/>
 
-```-> collections``` : *`MANDATORY`* path to collections folder or single file.<br/>
+```-> collections``` : *`MANDATORY`* path or uri to collections folder or single file.<br/>
 
-```-> environments``` : *`optional`* path to environments folder or single file.<br/>
+```-> environments``` : *`optional`* path or uri to environments folder or single file.<br/>
 
-```-> reports``` : *`optional`* path to reports output folder.<br/>
+```-> reports``` : *`optional`* local path to reports output folder.<br/>
 
-```-> data``` : *`optional`* path to test run iteration data folder or single file.<br/>
+```-> data``` : *`optional`* loacl path to test run iteration data folder or single file.<br/>
 
-```-> templates``` : *`optional`* path to `htmlfull` templates folder.<br/><br/>
+```-> templates``` : *`optional`* local path to `htmlfull` templates folder.<br/><br/>
 
   
-```reporter_template``` : *`optional`* - `htmlfull` reporter specific template filename. If not used runner will use default ```htmlfull``` template.<br/><br/>
+```reporter_template``` : *`optional`* - `htmlfull` reporter specific template filename located in local options.templates folder. If not used runner will use default ```htmlfull``` template.<br/><br/>
 
   
 ```anonymizeFilter``` : *`optional`* - report file anonymize regex filter. Runner will put *** in place of matching groups. If not used runner will not anonymize reports.<br/><br/>
 
   
-```specific_collection_items_to_run``` : *`optional`* - specific collection(s) folder or request (items) names to run. If not used runner will run all items in collection(s).<br/><br/>
+```specific_collection_items_to_run``` : *`optional`* - specific collection(s) folder or item names to run from all collections or signle collection located under options.collections path. If not used runner will run all folders and items in collection(s).<br/><br/>
 
-```parallelFolderRuns``` : *`optional`* will atomize each collection into separate folder runs.<br/><br/>
+```parallelFolderRuns``` : *`optional`* will atomize each collection into separate folder and item runs. This may speed-up whole collection execution time but may also clog it if there are too much runs. It will also prodcue separate report files since these produces separate run for each item. <br/><br/>
 
-```newmanOptions```:*`optional`* this object will pass-trough any standard [nemwan.run() options](https://www.npmjs.com/package/newman#api-reference). Note however, that this may overwrite some options used by *newman-async-runner*.<br><br>
+```newmanOptions```:*`optional`* this object will pass-trough any standard [nemwan.run() options](https://www.npmjs.com/package/newman#api-reference). In case of conflict this will overwrite options used by *newman-async-runner*.<br><br>
  
 
 ### ```runnerMethods```:
