@@ -1,6 +1,5 @@
 class Collection {
-	constructor(address, content, name) {
-		this.address = address;
+	constructor(content, name) {
 		this.content = content;
 		this.name = name;
 		this.folders = new Array();
@@ -8,8 +7,7 @@ class Collection {
 }
 
 class Environment {
-	constructor(address, content, name) {
-		this.address = address;
+	constructor(content, name) {
 		this.content = content;
 		this.name = name;
 	}
@@ -46,34 +44,72 @@ module.exports = {
 			}
 		}
 
-		async checkApiCollections(uri){
-			this.handleSingle = function(singleCollection){
-				let collectionObject = new Collection(uri, singleCollection, singleCollection.info.name)
-				for (const folder of singleCollection.item){
-					collectionObject.folders.push(folder.name);
-				}
-				return collectionObject;
+		handleCollection(collection){
+			let collectionObject = new Collection(collection, collection.info.name)
+			for (const folder of collection.item){
+				collectionObject.folders.push(folder.name);
 			}
+			return collectionObject;
+		}
 
+		handleEnvironment(environment){
+			return new Environment(environment, environment.name);
+		}
+
+		async fetchViaApi(uri){
 			let response; try{
 				response = await request(uri, {json: true});
 			} catch (error){
-				throw new Error('collections path: ' + uri + ' does not exist or is invalid, unable to generate newman runs.\nCause: ' + error.toString());
+				throw new Error('path: ' + uri + ' does not exist or is invalid, unable to generate newman runs.\nCause: ' + error.toString());
 			}
-
 			if (!response){
-				throw new Error('collections path: ' + uri + ' does not exist or is invalid, unable to generate newman runs');
+				throw new Error('path: ' + uri + ' does not exist or is invalid, unable to generate newman runs');
 			} else if (response.collection){
-				return [this.handleSingle(response.collection)];
+				return [this.handleCollection(response.collection)];
 			} else if (response.collections){
-				let collectionObjects = new Array();
+				let collectionObjects = newArray();
 				for (let collection of response.collections){
-					collection = await this.checkApiCollections('https://api.getpostman.com/collections/' + collection.uid + '?' + new URL(uri).searchParams.toString());
-					collectionObjects.push(collection[0]);
+					collection = await this.fetchViaApi(this.pmCollectionsEndpoint + collection.uid + '?' + new URL(uri).searchParams.toString());
+					collectionObjects.push(collection.pop());
 				}
-				return collectionObjects;
+				return collectionObjects.length ? collectionObjects : [undefined];
+			} else if (response.environment){
+				return [this.handleEnvironment(response.collection)];
+			} else if (response.environments){
+				let environmentObjects = new Array();
+				for (let environment of response.environments){
+					environment = await this.fetchViaApi(this.pmEnvironmentsEndpoint + environment.uid + '?' + new URL(uri).searchParams.toString());
+					environmentObjects.push(environment.pop());
+				}
+				return environmentObjects.length ? environmentObjects : [undefined];
 			} else {
-				throw new Error('collections path: ' + uri + ' does not exist or is invalid, unable to generate newman runs');
+				throw new Error('path: ' + uri + ' does not exist or is invalid, unable to generate newman runs');
+			}
+		}
+
+		async fetchViaFileSystem(filePath){
+			if(await fs.lstatSync(filePath).isDirectory()){
+				let files = fs.readdirSync(filePath).filter(function (e) {
+					return path.extname(e).toLowerCase() === '.json';
+				});
+				let fileObjects = new Array();
+				for (let file of files){
+					file = await this.fetchViaFileSystem(filePath + file);
+					fileObjects.push(file.pop());
+				}
+				return fileObjects.length ? fileObjects : [undefined];
+			} else if (await fs.lstatSync(filePath).isFile()){
+				const file = await JSON.parse(fs.readFileSync(filePath)); 
+				if (file.info){
+					return [this.handleCollection(file)];
+				} else if (file.name){
+					return [this.handleEnvironment(file)];
+				} else {
+					throw new Error('file: ' + file + 'is not a valid postman collection or environment');
+				}
+
+			} else {
+				throw new Error('path: ' + filePath + ' does not exist or is invalid, unable to generate newman runs');
 			}
 		}
 
@@ -82,32 +118,9 @@ module.exports = {
 			if (!this.options || !this.options.folders || !collectionsPath) {
 				return [undefined];
 			} else if (!fs.existsSync(collectionsPath)){
-				return await this.checkApiCollections(collectionsPath);
-			} else if (await fs.lstatSync(collectionsPath).isDirectory()){
-				let collectionObjects = new Array();
-				const colections = await fs.readdirSync(collectionsPath).filter(function (e) {
-					return path.extname(e).toLowerCase() === '.json';
-				});
-				for (let c of colections) {
-					const collection = await JSON.parse(fs.readFileSync(collectionsPath + c));
-					let collectionObject = new Collection(collectionsPath + c, collection, collection.info.name);
-					for (const folder of collection.item) {
-						collectionObject.folders.push(folder.name);
-					}
-					collectionObjects.push(collectionObject);
-				}
-				return collectionObjects;
-			} else if (await fs.lstatSync(collectionsPath).isFile()) {
-				if (path.extname(collectionsPath).toLowerCase() === '.json'){
-					const collection = await JSON.parse(fs.readFileSync(collectionsPath));
-					let collectionObject = new Collection(collectionsPath, collection, collection.info.name);
-					for (const folder of collection.item) {
-						collectionObject.folders.push(folder.name);
-					}
-					return [collectionObject];
-				}
+				return await this.fetchViaApi(collectionsPath);
 			} else {
-				throw new Error('no collections found for path: ' + collectionsPath);
+				return await this.fetchViaFileSystem(collectionsPath);
 			}
 		}
 
@@ -116,25 +129,9 @@ module.exports = {
 			if (!this.options || !this.options.folders || !environmentsPath) {
 				return [undefined];
 			} else if (!fs.existsSync(environmentsPath)){
-				throw new Error('environments path: ' + environmentsPath + ' does not exist or is invalid, unable to generate newman runs');
-			} else if (await fs.lstatSync(environmentsPath).isDirectory()){
-				let environmentObjects = new Array();
-				const environments = fs.readdirSync(environmentsPath).filter(function (e) {
-					return path.extname(e).toLowerCase() === '.json';
-				});
-				for (const e of environments) {
-					const environment = await JSON.parse(fs.readFileSync(environmentsPath + e));
-					environmentObjects.push(new Environment(environmentsPath + e, environment, environment.name));
-				}
-				return environmentObjects.length ? environmentObjects : [undefined];
-			} else if (await fs.lstatSync(environmentsPath).isFile()){
-				if (path.extname(environmentsPath).toLowerCase() === '.json'){
-					const environment = await JSON.parse(fs.readFileSync(environmentsPath));
-					const environmentObject = new Environment(environmentsPath, environment, environment.name);
-					return [environmentObject];
-				}
+				return await this.fetchViaApi(environmentsPath);
 			} else {
-				throw new Error('no envrionments found for path: ' + environmentsPath);
+				return await this.fetchViaFileSystem(environmentsPath);
 			}
 		}
 
@@ -146,11 +143,11 @@ module.exports = {
 				throw new Error('iteration data files path: ' + dataPath + ' does not exist or is invalid, unable to generate newman runs');
 			} else if (await fs.lstatSync(dataPath).isDirectory()){
 				let fileObjects = new Array()
-				const files = await fs.readdirSync(this.options.folders.data).filter(function (e) {
+				const files = await fs.readdirSync(dataPath).filter(function (e) {
 					return path.extname(e).toLowerCase() === '.json' || path.extname(e).toLowerCase() === '.csv';
 				});
 				for (const file of files) {
-					fileObjects.push(new File(this.options.folders.data + file, file));
+					fileObjects.push(new File(dataPath + file, file));
 				}
 				return fileObjects.length ? fileObjects : [undefined];
 			} else if (await fs.lstatSync(dataPath).isFile()){
