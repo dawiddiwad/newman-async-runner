@@ -12,7 +12,9 @@
   "dependencies": {
     "async": "^3.1.0",
     "newman": "^4.5.4",
-    "newman-reporter-htmlfull": "github:dawiddiwad/newman-reporter-htmlfull#master"
+    "newman-reporter-htmlfull": "github:dawiddiwad/newman-reporter-htmlfull#master",
+    "request": "^2.88.0",
+    "request-promise": "^4.2.4"
   },
   "repository": {
     "type": "git",
@@ -30,8 +32,8 @@
     "sinon": "*"
   },
   "scripts": {
-    "test": "nyc mocha test/test-utils.js test/unit-tests.js test/e2e-tests.js",
-    "unit-test": "nyc mocha test/test-utils.js test/unit-tests.js",
-    "e2e-test": "nyc mocha test/test-utils.js test/e2e-tests.js"
+    "test": "nyc --reporter=html --reporter=text mocha test/test-utils.js test/unit-tests.js test/e2e-tests.js",
+    "unit-test": "nyc --reporter=html --reporter=text mocha test/test-utils.js test/unit-tests.js",
+    "e2e-test": "nyc --reporter=html --reporter=text mocha test/test-utils.js test/e2e-tests.js"
   }
 }

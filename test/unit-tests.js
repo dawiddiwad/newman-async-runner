@@ -1,6 +1,9 @@
 import ('./test-utils');
 
 describe('newman-async-runner [unit]', async function (done) {
+    this.timeout(10000);
+    const pmCollectionsEndpoint = 'https://api.getpostman.com/collections/';
+    const pmEnvironmentsEndpoint = 'https://api.getpostman.com/environments/';
     let
         assert,
         _nar,
@@ -23,62 +26,30 @@ describe('newman-async-runner [unit]', async function (done) {
     }
 
     before(function () {
-        this.timeout(10000);
         assert = require('assert');
         _nar = runnerFactory();
         resetOptions();
     })
     describe('#setupFolders()', function () {
-        let directory;
-        before(async function () {
-            await cleanTestDirectory();
-            await fs.mkdirSync('./test/reports/');
-            await new _nar.NewmanRunner(optionsFactory()).setupFolders();
-            directory = fs.readdirSync('./test/');
-        })
-        after(async function () {
-            await cleanTestDirectory();
-        })
-        it('directory should contain folder: collections', function () {
-            assert(directory.includes('collections'), true);
-        })
-        it('directory should contain folder: environments', function () {
-            assert(directory.includes('environments'), true);
-        })
-        it('directory should contain folder: reports', function () {
-            assert(directory.includes('reports'), true);
-        })
-        it('directory should contain folder: data', function () {
-            assert(directory.includes('data'), true);
-        })
-        it('directory should contain folder: templates', function () {
-            assert(directory.includes('templates'), true);
-        })
-        it('should not create directories for single files', async function(){
-            let options = optionsFactory();
-            await cleanTestDirectory();
-            options.folders.environments = './test/environments/1_env.json';
-            createTestFolders(optionsFactory());
-            copyTest.all(1, optionsFactory());
-
-            await new _nar.NewmanRunner(options).setupFolders();
-            directory = fs.readdirSync('./test/');
-            expect(directory).to.not.include(options.folders.environments);
-        })
         it('throws error when no collections folder is set in runner options', async function () {
-            await createTestFolders(optionsFactory());
-            await cleanTestDirectory();
             let options = new Object();
-            let _mocked = runnerFactory();
-            let runner = new _mocked.NewmanRunner(options);
+            let runner = runnerFactory();
+            runner = new runner.NewmanRunner(options);
             try {
                 await runner.setupFolders();
             } catch (error) {
                 expect(error).to.be.a('Error');
                 expect(error.message).to.equal('undefined collections path in {runnerOptions.folders} -> Please define at least that :)');
             }
-            await createTestFolders(optionsFactory());
-            await cleanTestDirectory();
+        })
+        it('adds reports folder to runner options if missing', async function(){
+            let options = optionsFactory();
+            delete options.folders.reports;
+            let runner = runnerFactory();
+            runner = new runner.NewmanRunner(options);
+            await runner.setupFolders();
+
+            expect(runner.options.folders.reports).to.equal('./reports/');
         })
     })
     describe('#getCollections()', function () {
@@ -95,10 +66,6 @@ describe('newman-async-runner [unit]', async function (done) {
         })
         it('should generate collections', async function () {
             assert.equal(collectionObjects.length, 2);
-        })
-        it('collection has address', async function () {
-            assert.equal(collectionObjects[0].address, './test/collections/yolo.postman_collection.json');
-            assert.equal(collectionObjects[1].address, './test/collections/yolo.postman_collection2.json');
         })
         it('collection has name', async function () {
             assert.equal(collectionObjects[0].name, 'yolo');
@@ -141,35 +108,33 @@ describe('newman-async-runner [unit]', async function (done) {
             expect(collections[0].folders[1]).to.equal('folder1 Copy');
             expect(collections[0].folders[2]).to.equal('LUZEM');
         })
-        it('throws error when unable to find directory or file', async function () {
+        it('calls fetchViaApi() when path does not exist locally', async function(){
+            sandbox = sinon.createSandbox();
             let runner = new runnerFactory();
-            let collectionsPath = './dummy';
-            runner = new runner.NewmanRunner({folders: {collections: collectionsPath}});
+            sandbox.stub(runnerFactory().NewmanRunner.prototype, 'fetchViaApi').callsFake(function(uri){
+                return uri;
+            });
+            sandbox.stub(runnerFactory().NewmanRunner.prototype, 'fetchViaFileSystem').callsFake(function(uri){
+                return 'fail';
+            });
 
-            let didThrowError = false;
-            try{
-                await runner.getCollections();
-            } catch(error){
-                expect(error).to.be.a('Error');
-                expect(error.message).to.equal('collections path: ' + collectionsPath + ' does not exist or is invalid, unable to generate newman runs')
-                didThrowError = true;
-            }
-            expect(didThrowError).to.be.true;
+            runner = new runner.NewmanRunner({folders: {collections: pmCollectionsEndpoint}});
+            expect(await runner.getCollections()).to.equal(pmCollectionsEndpoint);
+            sandbox.restore();
         })
-        it('throws error when given directory is neither directory or file', async function () {
+        it('calls fetchViaFileSystem() when path does not exist locally', async function(){
+            sandbox = sinon.createSandbox();
             let runner = new runnerFactory();
-            let collectionsPath = new net.Socket();
-            runner = new runner.NewmanRunner({folders: {collections: collectionsPath}});
+            sandbox.stub(runnerFactory().NewmanRunner.prototype, 'fetchViaApi').callsFake(function(uri){
+                return 'fail';
+            });
+            sandbox.stub(runnerFactory().NewmanRunner.prototype, 'fetchViaFileSystem').callsFake(function(uri){
+                return uri;
+            });
 
-            let didThrowError = false;
-            try{
-                await runner.getCollections();
-            } catch(error){
-                expect(error).to.be.a('Error');
-                expect(error.message).to.equal('collections path: ' + collectionsPath + ' does not exist or is invalid, unable to generate newman runs')
-                didThrowError = true;
-            }
-            expect(didThrowError).to.be.true;
+            runner = new runner.NewmanRunner({folders: {collections: './'}});
+            expect(await runner.getCollections()).to.equal('./');
+            sandbox.restore();
         })
     })
     describe('#getEnvironments()', function () {
@@ -193,10 +158,6 @@ describe('newman-async-runner [unit]', async function (done) {
             let returnEnvironments = await new _nar.NewmanRunner(copyOptions).getEnvironments();
             assert.deepEqual(returnEnvironments, [undefined]);
         })
-        it('environment has address', function () {
-            assert.equal(environmentObjects[0].address, './test/environments/UAT.postman_environment.json');
-            assert.equal(environmentObjects[1].address, './test/environments/UAT.postman_environment2.json');
-        })
         it('environment has name', function () {
             assert.equal(environmentObjects[0].name, 'UAT');
             assert.equal(environmentObjects[1].name, 'UAT');
@@ -208,36 +169,6 @@ describe('newman-async-runner [unit]', async function (done) {
             let environments = await runner.getEnvironments();
             expect(environments.length).to.equal(1);
             expect(environments[0].name).to.equal('UAT');
-        })
-        it('throws error when unable to find directory or file', async function () {
-            let runner = new runnerFactory();
-            let environmentsPath = './test/environments/UAT.postman_environment_INVALID.json';
-            runner = new runner.NewmanRunner({folders: {environments: environmentsPath}});
-
-            let didThrowError = false;
-            try{
-                await runner.getEnvironments();
-            } catch(error){
-                expect(error).to.be.a('Error');
-                expect(error.message).to.equal('environments path: ' + environmentsPath + ' does not exist or is invalid, unable to generate newman runs')
-                didThrowError = true;
-            }
-            expect(didThrowError).to.be.true;
-        })
-        it('throws error when given directory is neither directory or file', async function () {
-            let runner = new runnerFactory();
-            let environmentsPath = new net.Socket();
-            runner = new runner.NewmanRunner({folders: {environments: environmentsPath}});
-
-            let didThrowError = false;
-            try{
-                await runner.getEnvironments();
-            } catch(error){
-                expect(error).to.be.a('Error');
-                expect(error.message).to.equal('environments path: ' + environmentsPath + ' does not exist or is invalid, unable to generate newman runs')
-                didThrowError = true;
-            }
-            expect(didThrowError).to.be.true;
         })
     })
     describe('#anonymizeReportsPassword()', function () {
@@ -404,8 +335,8 @@ describe('newman-async-runner [unit]', async function (done) {
             sinon.assert.calledOnce(collectionRunsSpy);
 
             await async.parallel(NAR.collectionRuns, function () { });
-            expect(runsSpy.args[0][0].collection).to.equal(collections[0].address);
-            expect(runsSpy.args[0][0].environment).to.equal(environments[0].address);
+            expect(runsSpy.args[0][0].collection).to.equal(collections[0].content);
+            expect(runsSpy.args[0][0].environment).to.equal(environments[0].content);
             expect(runsSpy.args[0][0].iterationData).to.equal(dataFiles[0].address);
         })
         it('correctly handles non-environment runs', async function () {
@@ -424,7 +355,7 @@ describe('newman-async-runner [unit]', async function (done) {
             sinon.assert.calledOnce(collectionRunsSpy);
 
             await async.parallel(NAR.collectionRuns, function () { });
-            expect(runsSpy.args[0][0].collection).to.equal(collections[0].address);
+            expect(runsSpy.args[0][0].collection).to.equal(collections[0].content);
             expect(runsSpy.args[0][0].environment).to.equal(undefined);
             expect(runsSpy.args[0][0].iterationData).to.equal(dataFiles[0].address);
         })
@@ -497,7 +428,7 @@ describe('newman-async-runner [unit]', async function (done) {
         it('sets proper reporter template')
         it('gives proper name to test report')
     })
-    describe('#getFiles', async function(){
+    describe('#getFiles', function(){
         let intialAmountOfFiles = 3;
         beforeEach('#getFiles() before each', async function () {
             await cleanTestDirectory();
@@ -565,4 +496,112 @@ describe('newman-async-runner [unit]', async function (done) {
             expect(didThrowError).to.be.true;
         })
     })
+    describe('#fetchViaApi', function(){
+        let apiKey;
+        let SingleCollectionUid;
+        let SingleEnvironmentUid;
+        before('before #fetchViaApi() tests', async function(){
+            apiKey = await getApiKey();
+            SingleCollectionUid = '5022740-bd0d91a1-56f1-4d8b-9392-7c001f17ee7b';
+            SingleEnvironmentUid = '5022740-59ab22de-0a26-4c81-af4e-ccc02d0d19c6';
+        })
+        it('fetches single collection', async function(){
+            const collectionPath = pmCollectionsEndpoint + SingleCollectionUid + apiKey;
+            let runner = runnerFactory();
+            runner = new runner.NewmanRunner({folders: {collections: collectionPath}});
+
+            const result = await runner.fetchViaApi(collectionPath);
+            expect(result).to.be.a('Array');
+            expect(result.length).equals(1);
+            expect(result[0].content).to.have.property('info');
+        })
+        it('fetches multiple collections', async function(){
+            const collectionPath = pmCollectionsEndpoint + apiKey;
+            let runner = runnerFactory();
+            runner = new runner.NewmanRunner({folders: {collections: collectionPath}});
+
+            const result = await runner.fetchViaApi(collectionPath);
+            expect(result).to.be.a('Array');
+            expect(result.length).equals(3);
+            expect(result[0].name).not.equals(result[1].name);
+        })
+        it('fetches single environment', async function(){
+            const environmentPath = pmEnvironmentsEndpoint + SingleEnvironmentUid + apiKey;
+            let runner = runnerFactory();
+            runner = new runner.NewmanRunner({folders: {collections: environmentPath}});
+
+            const result = await runner.fetchViaApi(environmentPath);
+            expect(result).to.be.a('Array');
+            expect(result.length).equals(1);
+            expect(result[0].content).to.have.property('name');
+            expect(result[0].content).not.to.have.property('info');
+        })
+        it('fetches multiple environments', async function(){
+            const environmentPath = pmEnvironmentsEndpoint + apiKey;
+            let runner = runnerFactory();
+            runner = new runner.NewmanRunner({folders: {collections: environmentPath}});
+
+            const result = await runner.fetchViaApi(environmentPath);
+            expect(result).to.be.a('Array');
+            expect(result.length).equals(2);
+            expect(result[0].name).not.equals(result[1].name);
+        })
+        it('throws error on request exception', async function(){
+            const uri = 'dummy';
+            let runner = runnerFactory();
+            runner = new runner.NewmanRunner({folders: {collections: uri}});
+
+            let hasThrownError = false;
+            try{
+                await runner.fetchViaApi(uri);
+            } catch(error){
+                expect(error).to.be.a('Error');
+                expect(error.message).equals('path: ' + uri +' does not exist or is invalid, unable to generate newman runs.\nCause: RequestError: Error: Invalid URI \"' + uri + '\"');
+                hasThrownError = true;
+            }
+            expect(hasThrownError).to.be.true;
+        })
+        it('throws error on invalid uri', async function(){
+            const uri = 'https://www.google.com';
+            let runner = runnerFactory();
+            runner = new runner.NewmanRunner({folders: {collections: uri}});
+
+            let hasThrownError = false;
+            try{
+                await runner.fetchViaApi(uri);
+            } catch(error){
+                expect(error).to.be.a('Error');
+                expect(error.message).equals('path: ' + uri +' does not exist or is invalid, unable to generate newman runs.');
+                hasThrownError = true;
+            }
+            expect(hasThrownError).to.be.true;
+        })
+    })
+    describe('#fetchViaFileSystem', function(){
+        it('fetches single collection')
+        it('fetches multiple collections')
+        it('fetches single environment')
+        it('fetches multiple environments')
+        it('throws error on invalid file content')
+        it('throws error on invalid path')
+    })
+    describe('#handleCollection', function(){
+        it('returns new Collections object for given collection json')
+    })
+    describe('#handleEnvironment', function(){
+        it('returns new Environment object for given environment json')
+    })
+    describe('#setupCollections', function(){
+        it('runs for each data file')
+        it('runs for each collection')
+        it('runs for each environment')
+        it('runs for selected items')
+        it('runs for parallel items')
+        it('runs for all items')
+    })
+    describe('#runTests', function(){
+        it('triggers async runs setup and then launches tests')
+        it('returns result after all runs are completed')
+    })
+
 })

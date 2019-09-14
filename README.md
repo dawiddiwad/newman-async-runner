@@ -3,7 +3,7 @@
 
 # Newman Async Runner
 
-newman async runner lets you run your postman *collections* asychnrounously (fire runs at once) as all-against-all matrix for:<br/>
+newman async runner lets you run your local and online (API) postman *collections* asynchronously as all-against-all matrix for:<br/>
 
 ` -> collections or their specific folders/items`<br/>
 
@@ -17,7 +17,7 @@ newman async runner lets you run your postman *collections* asychnrounously (fir
 
 It uses `htmlfull` reporter - however this can be easily override by passing custom ```newmanOptions```,  see [API](#api) 
 
-## Instalation
+## Installation
 
 ```
 
@@ -41,9 +41,9 @@ const runnerOptions = {
 			reports: './reports/', 
 			data: './data/',
 		},
-		newmanOptions = {
+		newmanOptions: {
 			timeoutRequest: 10000
-		};
+		}
 	};
 
 new runner.NewmanRunner(runnerOptions).runTests();
@@ -55,42 +55,55 @@ Runner can be easily paired with popular test frameworks like ```Mocha``` or ```
 Simple ```Mocha``` example with ```chai```:<br>
 
 ```javascript
-const
-	expect = require('chai').expect,
-	runner = require('newman-async-runner').NewmanRunner;
+console.log = function(){};
+const expect = require('chai').expect;
+const runner = require('newman-async-runner').NewmanRunner;
 
-const 
-	UAT = {
-		folders:  {
-			collections:'./UAT/collections/'
-		}
-	},
-	SIT = {
-		folders: {
-			collections:'./SIT/collections/'
-		}
+const UAT = {
+	folders:
+		{collections:'https://api.getpostman.com/collections/?apikey=YOUR_POSTMAN_API_KEY'},
+	specific_collection_items_to_run: ['test folder A', 'test folder B'],
+	newmanOptions:
+		{reporters: 'htmlfull'}
+	};
+
+const SIT = {
+	folders:
+		{collections:'https://api.getpostman.com/collections/?apikey=YOUR_POSTMAN_API_KEY'},
+	specific_collection_items_to_run: ['test folder C', 'test folder D', 'test folder E'],
+	newmanOptions:
+		{reporters: 'htmlfull'} 
 	};
 
 describe('My Application API tests', function(){
-
+	this.timeout(10000)
+	
 	it('passes all UAT tests', async function(){
-		for (let singleRun of await new runner(UAT).runTests()){
-			expect(singleRun.error).to.be.null;
+		for (const eachResult of await new runner(UAT).runTests()){
+			expect(eachResult.summary.run.failures).to.be.empty;
 		}
 	})
 
 	it('passes all SIT tests', async function(){
-		for (let singleRun of await new runner(SIT).runTests()){
-			expect(singleRun.error).to.be.null;
+		for (const eachResult of await new runner(SIT).runTests()){
+			expect(eachResult.summary.run.failures).to.be.empty;
 		}
 	})
 })
+```
+...and the result should be something like:
+```cli
+  My Application API tests
+    √ passes all UAT tests (2989ms)
+    √ passes all SIT tests (2137ms)
+
+  2 passing (5s)
 ```
 
   
 ## API
 ### ```runnerOptions```:
-example of all available options:
+example of available options:
 ```javascript
 const runnerOptions = {
 	folders: {
@@ -99,50 +112,52 @@ const runnerOptions = {
 		reports: './reports/', 
 		data: './data/',
 		templates: './templates/'},
+
 	reporter_template: 'htmlreqres.hbs',
 	anonymizeFilter: /(?<=\<password:\>)(.*?)(?=\<\\password\>)/g,
 	specific_collection_items_to_run: ['folder 1', 'folder 2'],
 	parallelFolderRuns: false,
-	newmanOptions = {
+	
+	newmanOptions: {
 		color: 'off',
 		timeoutRequest: 10000
-	};
+	}
 };
 ```
 
-##### ```folders``` :<br/>
+##### ```folders``` : *`MANDATORY`* *`object`*<br/>
 
-```-> collections``` : *`MANDATORY`* path to collections folder or single file.<br/>
+```-> collections``` : *`MANDATORY`* *`string`* local path or online (postman API) uri to collections folder or single file.<br/>
 
-```-> environments``` : *`optional`* path to environments folder or single file.<br/>
+```-> environments``` : *`optional`* *`string`* local path or online (postman API) uri to environments folder or single file.<br/>
 
-```-> reports``` : *`optional`* path to reports output folder.<br/>
+```-> reports``` : *`optional`* *`string`* local path to reports output folder.<br/>
 
-```-> data``` : *`optional`* path to test run iteration data folder or single file.<br/>
+```-> data``` : *`optional`* *`string`* local path to test run iteration data folder or single file.<br/>
 
-```-> templates``` : *`optional`* path to `htmlfull` templates folder.<br/><br/>
-
-  
-```reporter_template``` : *`optional`* - `htmlfull` reporter specific template filename. If not used runner will use default ```htmlfull``` template.<br/><br/>
+```-> templates``` : *`optional`* *`string`* local path to `htmlfull` templates folder.<br/><br/>
 
   
-```anonymizeFilter``` : *`optional`* - report file anonymize regex filter. Runner will put *** in place of matching groups. If not used runner will not anonymize reports.<br/><br/>
+```reporter_template``` : *`optional`* *`string`* - `htmlfull` reporter specific template filename located in local options.templates folder. If not used runner will use default ```htmlfull``` template.<br/><br/>
 
   
-```specific_collection_items_to_run``` : *`optional`* - specific collection(s) folder or request (items) names to run. If not used runner will run all items in collection(s).<br/><br/>
+```anonymizeFilter``` : *`optional`* *`js regex expression`* - report file anonymize regex filter. Runner will put *** in place of matching groups. If not used runner will not anonymize reports.<br/><br/>
 
-```parallelFolderRuns``` : *`optional`* will atomize each collection into separate folder runs.<br/><br/>
+  
+```specific_collection_items_to_run``` : *`optional`* *`string array`* - specific collection(s) folder or item names to run from all collections or single collection located under options.collections path. If not used runner will run all folders and items in collection(s).<br/><br/>
 
-```newmanOptions```:*`optional`* this object will pass-trough any standard [nemwan.run() options](https://www.npmjs.com/package/newman#api-reference). Note however, that this may overwrite some options used by *newman-async-runner*.<br><br>
+```parallelFolderRuns``` : *`optional`* *`boolean`* will atomize each collection into separate folder and item runs. This may speed-up whole collection execution time but may also clog it if there are too many runs. It will also generate much more report files since these produces separate run for each item. <br/><br/>
+
+```newmanOptions```:*`optional`* *`object`* this will pass-trough any standard [nemwan.run() options](https://www.npmjs.com/package/newman#api-reference). In case of conflict it overwrites options used by *newman-async-runner*.<br><br>
  
 
 ### ```runnerMethods```:
 
-<br>```runTests()``` - asynchronously fires ```newman``` test runs matrix for each combination of ```environment```, ```collection``` and ```iteration data``` files. It ```returns``` standard newman [[error, summary]](https://www.npmjs.com/package/newman#newmanruncallbackerror-object--summary-object-) results array for each run in matrix.<br><br>
+<br>```runTests()``` - asynchronously (all runs at once) fires ```newman``` test runs matrix for each combination of ```environment```, ```collection``` and ```iteration data``` files. It will pass already pre-fetched data to newman, so in case of giving postman api uri paths in ```options.folder``` runner will minimize api calls needed - currently there are [60 calls/minute limit](https://support.getpostman.com/hc/en-us/articles/360026236734-Postman-API-Usage-and-Rate-Limit) for postman api. Method ```returns``` standard newman [[error, summary]](https://www.npmjs.com/package/newman#newmanruncallbackerror-object--summary-object-) results array for each run in matrix, so it can be processed same way as newman callback arguments.<br><br>
 
 ## Roadmap
 
- - online collections, environments fetching trough Postman API (wip)
+ - fetch collection, environment and data files trough any http raw data source
 
   
 

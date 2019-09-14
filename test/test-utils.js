@@ -2,7 +2,7 @@ if (true){
     console.log = function () {
         return;
     }
-    var CLIshush = {reporters: 'htmlfull'};
+    var CLIshush = {reporters: 'htmlfull', timeoutRequest: 100};
 }
 
 process.on('unhandledRejection', function(err) {
@@ -10,6 +10,7 @@ process.on('unhandledRejection', function(err) {
 }),
 
 module.exports = {
+    request: request = require('request-promise'),
     chai: chai = require('chai'),
     sinon: sinon = require('sinon'),
     expect: expect = chai.expect,
@@ -49,6 +50,14 @@ module.exports = {
         }
     },
 
+    getApiKey: getApiKey = async function () {
+        try{
+            return '?apikey=' + await JSON.parse(fs.readFileSync('./test/testdata/postmanApiKey.json')).key;
+        } catch {
+            throw new Error('unable to open postmanApiKey.json file')
+        }
+    },
+
     optionsFactory: optionsFactory = function () {
         return runnerOptions = {
             parallelFolderRuns: false,
@@ -83,7 +92,7 @@ module.exports = {
         let testData = new Array();
         while (amount) {
             let randomName = Math.floor((Math.random() * 9999) + 1) + '_env';
-            testData.push({ address: './environments folder/' + randomName + '.json', name: randomName });
+            testData.push({ address: './environments folder/' + randomName + '.json', content: 'test content', name: randomName });
             amount--;
         }
         return testData;
