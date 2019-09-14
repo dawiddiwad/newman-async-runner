@@ -62,7 +62,7 @@ const runner = require('newman-async-runner').NewmanRunner;
 const UAT = {
 	folders:
 		{collections:'https://api.getpostman.com/collections/?apikey=YOUR_POSTMAN_API_KEY'},
-	specific_collection_items_to_run: ['test_folder_A', 'test_folder_B'],
+	specific_collection_items_to_run: ['test folder A', 'test folder B'],
 	newmanOptions:
 		{reporters: 'htmlfull'}
 	};
@@ -70,7 +70,7 @@ const UAT = {
 const SIT = {
 	folders:
 		{collections:'https://api.getpostman.com/collections/?apikey=YOUR_POSTMAN_API_KEY'},
-	specific_collection_items_to_run: ['test_folder_C', 'test_folder_D'],
+	specific_collection_items_to_run: ['test folder C', 'test folder D', 'test folder E'],
 	newmanOptions:
 		{reporters: 'htmlfull'} 
 	};
@@ -127,9 +127,9 @@ const runnerOptions = {
 
 ##### ```folders``` : *`MANDATORY`* *`object`*<br/>
 
-```-> collections``` : *`MANDATORY`* *`string`* local path or online uri to collections folder or single file.<br/>
+```-> collections``` : *`MANDATORY`* *`string`* local path or online (postman API) uri to collections folder or single file.<br/>
 
-```-> environments``` : *`optional`* *`string`* local path or online uri to environments folder or single file.<br/>
+```-> environments``` : *`optional`* *`string`* local path or online (postman API) uri to environments folder or single file.<br/>
 
 ```-> reports``` : *`optional`* *`string`* local path to reports output folder.<br/>
 
@@ -146,14 +146,14 @@ const runnerOptions = {
   
 ```specific_collection_items_to_run``` : *`optional`* *`string array`* - specific collection(s) folder or item names to run from all collections or single collection located under options.collections path. If not used runner will run all folders and items in collection(s).<br/><br/>
 
-```parallelFolderRuns``` : *`optional`* *`boolean`* will atomize each collection into separate folder and item runs. This may speed-up whole collection execution time but may also clog it if there are too many runs. It will also prodcue separate report files since these produces separate run for each item. <br/><br/>
+```parallelFolderRuns``` : *`optional`* *`boolean`* will atomize each collection into separate folder and item runs. This may speed-up whole collection execution time but may also clog it if there are too many runs. It will also generate much more report files since these produces separate run for each item. <br/><br/>
 
 ```newmanOptions```:*`optional`* *`object`* this will pass-trough any standard [nemwan.run() options](https://www.npmjs.com/package/newman#api-reference). In case of conflict it overwrites options used by *newman-async-runner*.<br><br>
  
 
 ### ```runnerMethods```:
 
-<br>```runTests()``` - asynchronously fires ```newman``` test runs matrix for each combination of ```environment```, ```collection``` and ```iteration data``` files. It ```returns``` standard newman [[error, summary]](https://www.npmjs.com/package/newman#newmanruncallbackerror-object--summary-object-) results array for each run in matrix.<br><br>
+<br>```runTests()``` - asynchronously (all runs at once) fires ```newman``` test runs matrix for each combination of ```environment```, ```collection``` and ```iteration data``` files. It will pass already pre-fetched data to newman, so in case of giving postman api uri paths in ```options.folder``` runner will minimize api calls needed - currently there are [60 calls/minute limit](https://support.getpostman.com/hc/en-us/articles/360026236734-Postman-API-Usage-and-Rate-Limit) for postman api. Method ```returns``` standard newman [[error, summary]](https://www.npmjs.com/package/newman#newmanruncallbackerror-object--summary-object-) results array for each run in matrix, so it can be processed same way as newman callback arguments.<br><br>
 
 ## Roadmap
 
