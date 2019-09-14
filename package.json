@@ -1,7 +1,7 @@
 {
   "name": "newman-async-runner",
   "description": "Asynchronous matrix test runner for newman",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "maintainers": [
     {
       "name": "Dawid Dobrowolski",
