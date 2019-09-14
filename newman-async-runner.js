@@ -128,10 +128,14 @@ module.exports = {
 			const environmentsPath = this.options.folders.environments;
 			if (!this.options || !this.options.folders || !environmentsPath) {
 				return [undefined];
+			} else if (this.environmentsFetchedData){
+				return this.environmentsFetchedData;
 			} else if (!fs.existsSync(environmentsPath)){
-				return await this.fetchViaApi(environmentsPath);
+				this.environmentsFetchedData = await this.fetchViaApi(environmentsPath);
+				return this.environmentsFetchedData;
 			} else {
-				return await this.fetchViaFileSystem(environmentsPath);
+				this.environmentsFetchedData = await this.fetchViaFileSystem(environmentsPath);
+				return this.environmentsFetchedData;
 			}
 		}
 
