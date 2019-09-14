@@ -117,10 +117,14 @@ module.exports = {
 			const collectionsPath = this.options.folders.collections;
 			if (!this.options || !this.options.folders || !collectionsPath) {
 				return [undefined];
+			} else if (this.collectionsFetchedData){
+				return this.collectionsFetchedData;
 			} else if (!fs.existsSync(collectionsPath)){
-				return await this.fetchViaApi(collectionsPath);
+				this.collectionsFetchedData = await this.fetchViaApi(collectionsPath);
+				return this.collectionsFetchedData;
 			} else {
-				return await this.fetchViaFileSystem(collectionsPath);
+				this.collectionsFetchedData = await this.fetchViaFileSystem(collectionsPath);
+				return await this.collectionsFetchedData;
 			}
 		}
 

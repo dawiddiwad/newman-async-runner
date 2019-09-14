@@ -303,5 +303,29 @@ describe('newman-async-runner [e2e]', async function () {
             expect(results[0].summary.environment.name).not.equals(results[1].summary.environment.name);
             await cleanTestDirectory();
         })
+        it('runs for all collections, environments and data files fetched via postman api', async function(){
+            await cleanTestDirectory();
+            await createTestFolders(optionsFactory());
+            await copyTest.data(1, optionsFactory(), '.json');
+            await copyTest.data(1, optionsFactory(), '.csv');
+            let runner = runnerFactory();
+            runner = new runner.NewmanRunner({
+                folders: {
+                    collections: pmCollectionsEndpoint + apiKey,
+                    environments: pmEnvironmentsEndpoint + apiKey,
+                    data: './test/data/',
+                    reports: './test/reports/'},
+                newmanOptions: {reporters: 'htmlfull', timeoutRequest: 100}
+            });
+
+            let results = await runner.runTests();
+            expect(results.length).equals(12);
+            for (eachResult of results){
+                expect(eachResult.summary.run.executions).not.to.be.empty;
+            }
+            expect(results[0].summary.collection.name).not.equals(results[4].summary.collection.name);
+            expect(results[0].summary.environment.name).not.equals(results[2].summary.environment.name);
+            await cleanTestDirectory();
+        })
     })
 })    
