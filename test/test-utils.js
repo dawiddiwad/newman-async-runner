@@ -143,5 +143,9 @@ module.exports = {
             reportFiles.push(file);
         }
         return reportFiles;
+    },
+
+    getCollection: getCollection = async function(){
+        return {collection:await JSON.parse(fs.readFileSync('./test/testdata/collections/yolo.postman_collection.json'))}; 
     }
 }

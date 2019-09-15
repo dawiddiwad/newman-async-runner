@@ -509,15 +509,24 @@ describe('newman-async-runner [unit]', async function (done) {
         let apiKey;
         let SingleCollectionUid;
         let SingleEnvironmentUid;
+        let sandbox;
         before('before #fetchViaApi() tests', async function(){
             apiKey = await getApiKey();
             SingleCollectionUid = '8804262-13f4c16b-dcbb-4440-8198-d60f9061eaff';
             SingleEnvironmentUid = '8804262-7b563f42-8bed-4ed7-aba7-7eca1e0d6230';
+            sandbox = sinon.createSandbox();
+        })
+        after('after #fetchViaApi() tests', function(){
+            sandbox.restore();
         })
         it('fetches single collection', async function(){
             const collectionPath = pmCollectionsEndpoint + SingleCollectionUid + apiKey;
             let runner = runnerFactory();
             runner = new runner.NewmanRunner({folders: {collections: collectionPath}});
+
+            sandbox.stub(global.request, 'Request').callsFake(async function(uri) {
+                return await getCollection();
+            });
 
             const result = await runner.fetchViaApi(collectionPath);
             expect(result).to.be.a('Array');
