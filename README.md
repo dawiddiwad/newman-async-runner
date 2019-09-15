@@ -144,7 +144,7 @@ const runnerOptions = {
 ```anonymizeFilter``` : *`optional`* *`js regex expression`* - report file anonymize regex filter. Runner will put *** in place of matching groups. If not used runner will not anonymize reports.<br/><br/>
 
   
-```specific_collection_items_to_run``` : *`optional`* *`string array`* - specific collection(s) folder/item names to run from all collections or single collection located under ```options.collections``` path. If not used runner will run all folders and items in collection(s). In case of nested collection sub-folders it will trigger run for last matching folder/item, [this is by newman design])(https://github.com/postmanlabs/postman-collection/issues/230).<br/><br/>
+```specific_collection_items_to_run``` : *`optional`* *`string array`* - specific collection(s) folder/item names to run from all collections or single collection located under ```options.collections``` path. If not used runner will run all folders and items in collection(s). In case of nested collection sub-folders it will trigger run for last matching folder/item, [this is by newman design](https://github.com/postmanlabs/postman-collection/issues/230).<br/><br/>
 
 ```parallelFolderRuns``` : *`optional`* *`boolean`* will atomize each collection into separate folder and item runs. USE ONLY WITH ```options.specific_collection_items_to_run``` SET. Otherwise it will trigger separate run for each item in collection ;) When setup correctly this may speed-up whole collection execution time but may also clog it if there are too many runs. It will also generate much more report files since these produces separate run for each item. Also beware of default Node heap allocation limit (1.7GB for V8).<br/><br/>
 
