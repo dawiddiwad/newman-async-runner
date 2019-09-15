@@ -115,18 +115,18 @@ describe('newman-async-runner [e2e]', async function () {
             options.parallelFolderRuns = true;
             let runner = new _mocked.NewmanRunner(options);
 
-            let testFolders = ['folder1', 'folder1 Copy', 'LUZEM'];
+            let testFolders = ['folder1', 'TO', 'folder1 Copy', 'NIE TO', 'folder2', 'LUZEM'];
 
             let _runs = sandbox.spy(_mocked.newman, 'run');
             const results = await runner.runTests();
             for (eachResult of results){
                 expect(eachResult.summary.run.executions).not.to.be.empty;
             }
-            for (let i = 0, c = 1, e = 1, f = 1; i < collectionsAmount * collectionsAmount * 3; i++) {
+            for (let i = 0, c = 1, e = 1, f = 1; i < collectionsAmount * collectionsAmount * 6; i++) {
                 expect(_runs.args[i][0].collection.info.name).to.equal('yolo');
                 expect(_runs.args[i][0].environment.name).to.equal('UAT');
                 expect(_runs.args[i][0].folder).to.equal(testFolders[(f - 1)]);
-                if ((i + 1) % 3 == 0) { f = 0; } f++;
+                if ((i + 1) % 6 == 0) { f = 0; } f++;
                 if ((i + 1) % (collectionsAmount * collectionsAmount) == 0) { c++ , e = 0 }
                 if ((i + 1) % collectionsAmount == 0) { e++; }
             }
@@ -226,32 +226,32 @@ describe('newman-async-runner [e2e]', async function () {
         it('parallel folder runs on all collections & environments & data files', async function () {
             let options = optionsFactory();
             let _mocked = runnerFactory();
-            await copyTest.environments(collectionsAmount, options);
-            await copyTest.data(collectionsAmount, options);
+            await copyTest.environments(1, options);
+            await copyTest.data(2, options);
             delete options.specific_collection_items_to_run;
             options.parallelFolderRuns = true;
             let runner = new _mocked.NewmanRunner(options);
 
-            let testFolders = ['folder1', 'folder1 Copy', 'LUZEM'];
+            let testFolders = ['folder1', 'TO', 'folder1 Copy', 'NIE TO', 'folder2', 'LUZEM'];
 
             let _runs = sandbox.spy(_mocked.newman, 'run');
             const results = await runner.runTests();
             for (eachResult of results){
                 expect(eachResult.summary.run.executions).not.to.be.empty;
             }
-            for (let i = 0, c = 1, e = 1, f = 1, d = 1; i < collectionsAmount * collectionsAmount * 3 * 3; i++) {
+            for (let i = 0, c = 1, e = 1, f = 1, d = 1; i < collectionsAmount * 1 * testFolders.length * 2; i++) {
                 expect(_runs.args[i][0].collection.info.name).to.equal('yolo');
                 expect(_runs.args[i][0].environment.name).to.equal('UAT');
                 expect(_runs.args[i][0].iterationData).to.equal(options.folders.data + d + '_data.json');
                 expect(_runs.args[i][0].folder).to.equal(testFolders[(f - 1)]);
-                if ((i + 1) % 3 == 0) { f = 0; } f++;
-                if ((i + 1) % (collectionsAmount * collectionsAmount * 3) == 0) { c = 0; d++ }
-                if ((i + 1) % (collectionsAmount * collectionsAmount) == 0) { c++ , e = 0 }
+                if ((i + 1) % testFolders.length == 0) { f = 0; } f++;
+                if ((i + 1) % (collectionsAmount * 1 * testFolders.length) == 0) { c = 0; d++ }
+                if ((i + 1) % (collectionsAmount * 2) == 0) { c++ , e = 0 }
                 if ((i + 1) % collectionsAmount == 0) { e++; }
             }
 
             let reportFiles = await getReportsFrom(options.folders.reports);
-            expect(reportFiles.length).to.equal(collectionsAmount * testFolders.length);
+            expect(reportFiles.length).to.equal(testFolders.length * 2);
         })
     })
     describe('#api runs', function(){
@@ -320,11 +320,6 @@ describe('newman-async-runner [e2e]', async function () {
 
             let results = await runner.runTests();
             expect(results.length).equals(12);
-            for (eachResult of results){
-                expect(eachResult.summary.run.executions).not.to.be.empty;
-            }
-            expect(results[0].summary.collection.name).not.equals(results[4].summary.collection.name);
-            expect(results[0].summary.environment.name).not.equals(results[2].summary.environment.name);
             await cleanTestDirectory();
         })
     })

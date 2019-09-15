@@ -73,16 +73,22 @@ describe('newman-async-runner [unit]', async function (done) {
 
         })
         it('collections has folders', async function () {
-            assert.equal(collectionObjects[0].folders.length, 3);
-            assert.equal(collectionObjects[1].folders.length, 3);
+            assert.equal(collectionObjects[0].folders.length, 6);
+            assert.equal(collectionObjects[1].folders.length, 6);
         })
         it('collection has correct folders content', async function () {
-            assert.equal(collectionObjects[0].folders[0], 'folder1');
-            assert.equal(collectionObjects[0].folders[1], 'folder1 Copy');
-            assert.equal(collectionObjects[0].folders[2], 'LUZEM');
-            assert.equal(collectionObjects[1].folders[0], 'folder1');
-            assert.equal(collectionObjects[1].folders[1], 'folder1 Copy');
-            assert.equal(collectionObjects[1].folders[2], 'LUZEM');
+            expect(collectionObjects[0].folders[0]).to.equal('folder1');
+            expect(collectionObjects[0].folders[1]).to.equal('TO');
+            expect(collectionObjects[0].folders[2]).to.equal('folder1 Copy');
+            expect(collectionObjects[0].folders[3]).to.equal('NIE TO');
+            expect(collectionObjects[0].folders[4]).to.equal('folder2');
+            expect(collectionObjects[0].folders[5]).to.equal('LUZEM');
+            expect(collectionObjects[1].folders[0]).to.equal('folder1');
+            expect(collectionObjects[1].folders[1]).to.equal('TO');
+            expect(collectionObjects[1].folders[2]).to.equal('folder1 Copy');
+            expect(collectionObjects[1].folders[3]).to.equal('NIE TO');
+            expect(collectionObjects[1].folders[4]).to.equal('folder2');
+            expect(collectionObjects[1].folders[5]).to.equal('LUZEM');
         })
         it('should return undefined array when there are no collection folders', async function () {
             let runner = new runnerFactory();
@@ -105,8 +111,11 @@ describe('newman-async-runner [unit]', async function (done) {
             expect(collections.length).to.equal(1);
             expect(collections[0].name).to.equal('yolo');
             expect(collections[0].folders[0]).to.equal('folder1');
-            expect(collections[0].folders[1]).to.equal('folder1 Copy');
-            expect(collections[0].folders[2]).to.equal('LUZEM');
+            expect(collections[0].folders[1]).to.equal('TO');
+            expect(collections[0].folders[2]).to.equal('folder1 Copy');
+            expect(collections[0].folders[3]).to.equal('NIE TO');
+            expect(collections[0].folders[4]).to.equal('folder2');
+            expect(collections[0].folders[5]).to.equal('LUZEM');
         })
         it('calls fetchViaApi() when path does not exist locally', async function(){
             sandbox = sinon.createSandbox();
@@ -571,7 +580,6 @@ describe('newman-async-runner [unit]', async function (done) {
                 await runner.fetchViaApi(uri);
             } catch(error){
                 expect(error).to.be.a('Error');
-                expect(error.message).equals('path: ' + uri +' does not exist or is invalid, unable to generate newman runs.');
                 hasThrownError = true;
             }
             expect(hasThrownError).to.be.true;
