@@ -1,0 +1,57 @@
+{
+	"info": {
+		"_postman_id": "b6a908f0-d4a8-4a5e-9ddc-96fed552e863",
+		"name": "test",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "https://cs107.salesforce.com/services/data/v43.0/ui-api/list-ui/Case/ES_Review_Screen",
+			"request": {
+				"auth": {
+					"type": "oauth2",
+					"oauth2": [
+						{
+							"key": "accessToken",
+							"value": "00D1q0000008d7x!AQUAQPGZIGvcN35FfFUSLsz46XXdvJgTrV0FvFVY6AHRhgkaPBDTClsALJ1DWQl6qw.42FvGGZvrausYUlFskLoeyKmeDykX",
+							"type": "string"
+						},
+						{
+							"key": "tokenType",
+							"value": "Bearer",
+							"type": "string"
+						},
+						{
+							"key": "addTokenTo",
+							"value": "header",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://cs107.salesforce.com/services/data/v43.0/ui-api/list-ui/Case/ES_Review_Screen",
+					"protocol": "https",
+					"host": [
+						"cs107",
+						"salesforce",
+						"com"
+					],
+					"path": [
+						"services",
+						"data",
+						"v43.0",
+						"ui-api",
+						"list-ui",
+						"Case",
+						"ES_Review_Screen"
+					]
+				},
+				"description": "view ES list view on cases"
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}

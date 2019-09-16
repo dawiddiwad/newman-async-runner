@@ -3,8 +3,6 @@ import ('./test-utils');
 describe('newman-async-runner [e2e]', async function () {
     this.timeout(120000);
     let sandbox;
-    const pmCollectionsEndpoint = 'https://api.getpostman.com/collections/';
-    const pmEnvironmentsEndpoint = 'https://api.getpostman.com/environments/';
     describe('#non-data driven runs', function () {
         let collectionsAmount = 3;
         beforeEach('e2e test', async function () {
@@ -255,25 +253,31 @@ describe('newman-async-runner [e2e]', async function () {
         })
     })
     describe('#api runs', function(){
-        let apiKey;
-        let SingleCollectionUid;
-        let SingleEnvironmentUid;
+        const collectionsEndpoint = 'https://api.getpostman.com/collections/?apikey=API_KEY_POSTMAN';
+        const environmentsEndpoint = 'https://api.getpostman.com/environments/?apikey=API_KEY_POSTMAN';
+        const snippets = 'https://api.getpostman.com/collections/8804262-13f4c16b-dcbb-4440-8198-d60f9061eaff?apikey=API_KEY_POSTMAN';
+        const test = 'https://api.getpostman.com/collections/8804262-b6a908f0-d4a8-4a5e-9ddc-96fed552e863?apikey=API_KEY_POSTMAN';
+        const yolo = 'https://api.getpostman.com/collections/8804262-c4129d67-4b56-44d1-a7cc-3c3da87ec73a?apikey=API_KEY_POSTMAN';
+        const UAT = 'https://api.getpostman.com/environments/8804262-7b563f42-8bed-4ed7-aba7-7eca1e0d6230?apikey=API_KEY_POSTMAN';
+        const SIT = 'https://api.getpostman.com/environments/8804262-d98686c9-d6b6-4be1-b0cb-a2adbb3aa4c4?apikey=API_KEY_POSTMAN';
+        apiKey = 'dd';
         before('before api runs tests', async function(){
-            apiKey = await getApiKey();
-            SingleCollectionUid = '8804262-13f4c16b-dcbb-4440-8198-d60f9061eaff';
-            SingleEnvironmentUid = '8804262-7b563f42-8bed-4ed7-aba7-7eca1e0d6230';
+            sandbox = sinon.createSandbox();
+        })
+        afterEach('after api runs tests', async function(){
+            sandbox.restore();
         })
         it('runs for single collection and environment fetched via postman api', async function(){
             await cleanTestDirectory();
             let runner = runnerFactory();
+            sandbox.stub(global, 'request').callsFake(callPostmanApi);
             runner = new runner.NewmanRunner({
                 folders: {
-                    collections: pmCollectionsEndpoint + SingleCollectionUid + apiKey,
-                    environments: pmEnvironmentsEndpoint + SingleEnvironmentUid + apiKey,
+                    collections: snippets,
+                    environments: UAT,
                     reports: './test/reports/'},
                 newmanOptions: {reporters: 'htmlfull', timeoutRequest: 100}
             });
-
             let results = await runner.runTests();
             expect(results.length).equals(1);
             for (eachResult of results){
@@ -286,10 +290,11 @@ describe('newman-async-runner [e2e]', async function () {
         it('runs for all collections and environments fetched via postman api', async function(){
             await cleanTestDirectory();
             let runner = runnerFactory();
+            sandbox.stub(global, 'request').callsFake(callPostmanApi);
             runner = new runner.NewmanRunner({
                 folders: {
-                    collections: pmCollectionsEndpoint + apiKey,
-                    environments: pmEnvironmentsEndpoint + apiKey,
+                    collections: collectionsEndpoint,
+                    environments: environmentsEndpoint,
                     reports: './test/reports/'},
                 newmanOptions: {reporters: 'htmlfull', timeoutRequest: 100}
             });
@@ -309,10 +314,11 @@ describe('newman-async-runner [e2e]', async function () {
             await copyTest.data(1, optionsFactory(), '.json');
             await copyTest.data(1, optionsFactory(), '.csv');
             let runner = runnerFactory();
+            sandbox.stub(global, 'request').callsFake(callPostmanApi);
             runner = new runner.NewmanRunner({
                 folders: {
-                    collections: pmCollectionsEndpoint + apiKey,
-                    environments: pmEnvironmentsEndpoint + apiKey,
+                    collections: collectionsEndpoint,
+                    environments: environmentsEndpoint,
                     data: './test/data/',
                     reports: './test/reports/'},
                 newmanOptions: {reporters: 'htmlfull', timeoutRequest: 100}

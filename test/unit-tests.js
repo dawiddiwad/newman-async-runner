@@ -3,7 +3,6 @@ import ('./test-utils');
 describe('newman-async-runner [unit]', async function (done) {
     this.timeout(10000);
     const pmCollectionsEndpoint = 'https://api.getpostman.com/collections/';
-    const pmEnvironmentsEndpoint = 'https://api.getpostman.com/environments/';
     let
         assert,
         _nar,
@@ -506,27 +505,24 @@ describe('newman-async-runner [unit]', async function (done) {
         })
     })
     describe('#fetchViaApi', function(){
-        let apiKey;
-        let SingleCollectionUid;
-        let SingleEnvironmentUid;
-        let sandbox;
+        const collectionsEndpoint = 'https://api.getpostman.com/collections/?apikey=API_KEY_POSTMAN';
+        const environmentsEndpoint = 'https://api.getpostman.com/environments/?apikey=API_KEY_POSTMAN';
+        const snippets = 'https://api.getpostman.com/collections/8804262-13f4c16b-dcbb-4440-8198-d60f9061eaff?apikey=API_KEY_POSTMAN';
+        const test = 'https://api.getpostman.com/collections/8804262-b6a908f0-d4a8-4a5e-9ddc-96fed552e863?apikey=API_KEY_POSTMAN';
+        const yolo = 'https://api.getpostman.com/collections/8804262-c4129d67-4b56-44d1-a7cc-3c3da87ec73a?apikey=API_KEY_POSTMAN';
+        const UAT = 'https://api.getpostman.com/environments/8804262-7b563f42-8bed-4ed7-aba7-7eca1e0d6230?apikey=API_KEY_POSTMAN';
+        const SIT = 'https://api.getpostman.com/environments/8804262-d98686c9-d6b6-4be1-b0cb-a2adbb3aa4c4?apikey=API_KEY_POSTMAN';
         before('before #fetchViaApi() tests', async function(){
-            apiKey = await getApiKey();
-            SingleCollectionUid = '8804262-13f4c16b-dcbb-4440-8198-d60f9061eaff';
-            SingleEnvironmentUid = '8804262-7b563f42-8bed-4ed7-aba7-7eca1e0d6230';
             sandbox = sinon.createSandbox();
+            sandbox.stub(global, 'request').callsFake(callPostmanApi);
         })
-        after('after #fetchViaApi() tests', function(){
+        after('after #fetchViaApi() tests', async function(){
             sandbox.restore();
         })
         it('fetches single collection', async function(){
-            const collectionPath = pmCollectionsEndpoint + SingleCollectionUid + apiKey;
+            const collectionPath = yolo;
             let runner = runnerFactory();
             runner = new runner.NewmanRunner({folders: {collections: collectionPath}});
-
-            sandbox.stub(global.request, 'Request').callsFake(async function(uri) {
-                return await getCollection();
-            });
 
             const result = await runner.fetchViaApi(collectionPath);
             expect(result).to.be.a('Array');
@@ -534,7 +530,7 @@ describe('newman-async-runner [unit]', async function (done) {
             expect(result[0].content).to.have.property('info');
         })
         it('fetches multiple collections', async function(){
-            const collectionPath = pmCollectionsEndpoint + apiKey;
+            const collectionPath = collectionsEndpoint;
             let runner = runnerFactory();
             runner = new runner.NewmanRunner({folders: {collections: collectionPath}});
 
@@ -544,7 +540,7 @@ describe('newman-async-runner [unit]', async function (done) {
             expect(result[0].name).not.equals(result[1].name);
         })
         it('fetches single environment', async function(){
-            const environmentPath = pmEnvironmentsEndpoint + SingleEnvironmentUid + apiKey;
+            const environmentPath = SIT;
             let runner = runnerFactory();
             runner = new runner.NewmanRunner({folders: {collections: environmentPath}});
 
@@ -555,7 +551,7 @@ describe('newman-async-runner [unit]', async function (done) {
             expect(result[0].content).not.to.have.property('info');
         })
         it('fetches multiple environments', async function(){
-            const environmentPath = pmEnvironmentsEndpoint + apiKey;
+            const environmentPath = environmentsEndpoint;
             let runner = runnerFactory();
             runner = new runner.NewmanRunner({folders: {collections: environmentPath}});
 
@@ -565,7 +561,7 @@ describe('newman-async-runner [unit]', async function (done) {
             expect(result[0].name).not.equals(result[1].name);
         })
         it('throws error on request exception', async function(){
-            const uri = 'dummy';
+            const uri = 'error';
             let runner = runnerFactory();
             runner = new runner.NewmanRunner({folders: {collections: uri}});
 
@@ -574,7 +570,7 @@ describe('newman-async-runner [unit]', async function (done) {
                 await runner.fetchViaApi(uri);
             } catch(error){
                 expect(error).to.be.a('Error');
-                expect(error.message).equals('path: ' + uri +' does not exist or is invalid, unable to generate newman runs.\nCause: RequestError: Error: Invalid URI \"' + uri + '\"');
+                expect(error.message).equals('path: ' + uri +' does not exist or is invalid, unable to generate newman runs.\nCause: Error: request error');
                 hasThrownError = true;
             }
             expect(hasThrownError).to.be.true;
@@ -589,6 +585,7 @@ describe('newman-async-runner [unit]', async function (done) {
                 await runner.fetchViaApi(uri);
             } catch(error){
                 expect(error).to.be.a('Error');
+                expect(error.message).equals('path: ' + uri + ' does not exist or is invalid, unable to generate newman runs.\nResponse was: ' + uri);
                 hasThrownError = true;
             }
             expect(hasThrownError).to.be.true;

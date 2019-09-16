@@ -1,0 +1,353 @@
+{
+	"info": {
+		"_postman_id": "c4129d67-4b56-44d1-a7cc-3c3da87ec73a",
+		"name": "yolo",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "folder1",
+			"item": [
+				{
+					"name": "TO",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "a75f3761-bfdc-4522-9064-b218e9cf83c6",
+								"exec": [
+									"pm.test('Response', function() {",
+									"    pm.expect(data.url.toString()).to.equal(data.url.toString() + '.json');",
+									"});",
+									"pm.environment.set(\"variable_key\", \"yolo!!!\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "https://www.pilotedge.net/atis/{{url}}.json",
+							"protocol": "https",
+							"host": [
+								"www",
+								"pilotedge",
+								"net"
+							],
+							"path": [
+								"atis",
+								"{{url}}.json"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "folder1 Copy",
+			"item": [
+				{
+					"name": "NIE TO",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "a75f3761-bfdc-4522-9064-b218e9cf83c6",
+								"exec": [
+									"pm.test('Response', function() {",
+									"    pm.expect(data.url.toString()).to.equal(data.url.toString());",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "https://www.pilotedge.net/atis/{{url}}.json",
+							"protocol": "https",
+							"host": [
+								"www",
+								"pilotedge",
+								"net"
+							],
+							"path": [
+								"atis",
+								"{{url}}.json"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "folder2",
+			"item": [
+				{
+					"name": "folder2",
+					"item": [
+						{
+							"name": "LUZEM",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "a75f3761-bfdc-4522-9064-b218e9cf83c6",
+										"exec": [
+											"pm.test('Response', function() {",
+											"    pm.expect(data.url.toString()).to.equal(data.url.toString());",
+											"});",
+											"",
+											"pm.expect(pm.environment.get(\"variable_key\")).to.equal('yolo');"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": []
+								},
+								"url": {
+									"raw": "https://www.pilotedge.net/atis/{{url}}.json",
+									"protocol": "https",
+									"host": [
+										"www",
+										"pilotedge",
+										"net"
+									],
+									"path": [
+										"atis",
+										"{{url}}.json"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "LUZEM",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "a75f3761-bfdc-4522-9064-b218e9cf83c6",
+								"exec": [
+									"pm.test('Response', function() {",
+									"    pm.expect(data.url.toString()).to.equal(data.url.toString());",
+									"});",
+									"",
+									"pm.expect(pm.environment.get(\"variable_key\")).to.equal('yolo');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "https://www.pilotedge.net/atis/{{url}}.json",
+							"protocol": "https",
+							"host": [
+								"www",
+								"pilotedge",
+								"net"
+							],
+							"path": [
+								"atis",
+								"{{url}}.json"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "folder2",
+			"item": [
+				{
+					"name": "folder2",
+					"item": [
+						{
+							"name": "LUZEM",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"id": "a75f3761-bfdc-4522-9064-b218e9cf83c6",
+										"exec": [
+											"pm.test('Response', function() {",
+											"    pm.expect(data.url.toString()).to.equal(data.url.toString());",
+											"});",
+											"",
+											"pm.expect(pm.environment.get(\"variable_key\")).to.equal('yolo');"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": []
+								},
+								"url": {
+									"raw": "https://www.pilotedge.net/atis/{{url}}.json",
+									"protocol": "https",
+									"host": [
+										"www",
+										"pilotedge",
+										"net"
+									],
+									"path": [
+										"atis",
+										"{{url}}.json"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"protocolProfileBehavior": {},
+					"_postman_isSubFolder": true
+				},
+				{
+					"name": "LUZEM",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "a75f3761-bfdc-4522-9064-b218e9cf83c6",
+								"exec": [
+									"pm.test('Response', function() {",
+									"    pm.expect(data.url.toString()).to.equal(data.url.toString());",
+									"});",
+									"",
+									"pm.expect(pm.environment.get(\"variable_key\")).to.equal('yolo');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "https://www.pilotedge.net/atis/{{url}}.json",
+							"protocol": "https",
+							"host": [
+								"www",
+								"pilotedge",
+								"net"
+							],
+							"path": [
+								"atis",
+								"{{url}}.json"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "LUZEM",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "a75f3761-bfdc-4522-9064-b218e9cf83c6",
+						"exec": [
+							"pm.test('Response', function() {",
+							"    pm.expect(data.url.toString()).to.equal(data.url.toString());",
+							"});",
+							"",
+							"pm.expect(pm.environment.get(\"variable_key\")).to.equal('yolo');"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": []
+				},
+				"url": {
+					"raw": "https://www.pilotedge.net/atis/{{url}}.json",
+					"protocol": "https",
+					"host": [
+						"www",
+						"pilotedge",
+						"net"
+					],
+					"path": [
+						"atis",
+						"{{url}}.json"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}

@@ -1,0 +1,1036 @@
+{
+	"info": {
+		"_postman_id": "13f4c16b-dcbb-4440-8198-d60f9061eaff",
+		"name": "snippets",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Login",
+			"item": [
+				{
+					"name": "SF Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "f1846671-081f-4f80-a829-2ee8604282db",
+								"exec": [
+									"pm.test(\"Login was successful\", function(){",
+									"    switch (pm.response.code){",
+									"        case 200:",
+									"            if (!isLoginResponseOK()){",
+									"                pm.expect.fail(\"Password expired\");",
+									"                postman.setNextRequest(null);",
+									"            }",
+									"            break;",
+									"        case 500:",
+									"            pm.expect.fail(\"Incorrect Username/Password\");",
+									"            postman.setNextRequest(null);",
+									"            break;",
+									"        default:",
+									"            pm.expect.fail(\"Other login error\");",
+									"            postman.setNextRequest(null);",
+									"    }  ",
+									"})",
+									"",
+									"function isLoginResponseOK(){",
+									"    const ",
+									"        json = xml2Json(responseBody),",
+									"        url = json[\"soapenv:Envelope\"][\"soapenv:Body\"].loginResponse.result.serverUrl,",
+									"        endpoint = url.substring(0, url.search(\"/services\")),",
+									"        sessionid = json[\"soapenv:Envelope\"][\"soapenv:Body\"].loginResponse.result.sessionId;",
+									"        ",
+									"    pm.environment.set(\"instance\", endpoint);",
+									"    pm.environment.set(\"sessionid\", sessionid);",
+									"    ",
+									"    if (json[\"soapenv:Envelope\"][\"soapenv:Body\"].loginResponse.result.passwordExpired == 'true') return false;",
+									"    else return true;",
+									"}",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "text/xml; charset=UTF-8",
+								"type": "text"
+							},
+							{
+								"key": "SOAPAction",
+								"value": "login",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "<?xml version=\"1.0\" encoding=\"utf-8\" ?>\r\n<env:Envelope xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"\r\n    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\r\n    xmlns:env=\"http://schemas.xmlsoap.org/soap/envelope/\">\r\n  <env:Body>\r\n    <n1:login xmlns:n1=\"urn:enterprise.soap.sforce.com\">\r\n      <n1:username>{{sflogin}}</n1:username>\r\n      <n1:password>{{sfpassword}}</n1:password>\r\n    </n1:login>\r\n  </env:Body>\r\n</env:Envelope>\r\n"
+						},
+						"url": {
+							"raw": "https://test.salesforce.com/services/Soap/c/{{API_VERSION}}/",
+							"protocol": "https",
+							"host": [
+								"test",
+								"salesforce",
+								"com"
+							],
+							"path": [
+								"services",
+								"Soap",
+								"c",
+								"{{API_VERSION}}",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Create",
+			"item": [
+				{
+					"name": "SF Create Account",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "32a54995-9910-406a-8906-6533f26dc4f8",
+								"exec": [
+									"var firstnames = [",
+									"'Liam',",
+									"'Noah',",
+									"'William',",
+									"'James',",
+									"'Logan',",
+									"'Benjamin',",
+									"'Mason',",
+									"'Elijah',",
+									"'Oliver',",
+									"'Jacob',",
+									"'Oliver',",
+									"'Harry',",
+									"'George',",
+									"'Noah',",
+									"'Jack',",
+									"'Jacob',",
+									"'Leo',",
+									"'Oscar',",
+									"'Charlie',",
+									"'Muhammad'",
+									"];",
+									"",
+									"var lastnames = [",
+									"'Smith',",
+									"'Jones',",
+									"'Williams',",
+									"'Taylor',",
+									"'Davies',",
+									"'Brown',",
+									"'Wilson',",
+									"'Evans',",
+									"'Thomas',",
+									"'Johnson',",
+									"'Roberts',",
+									"'Walker',",
+									"'Wright',",
+									"'Robinson',",
+									"'Thompson',",
+									"'White',",
+									"'Hughes',",
+									"'Edwards',",
+									"'Green',",
+									"'Lewis',",
+									"'Wood',",
+									"'Harris',",
+									"'Martin',",
+									"'Jackson',",
+									"'Clarke'",
+									"];",
+									"var firstname = firstnames[Math.floor(Math.random() * (firstnames.length - 1)) + 1];",
+									"var lastname = lastnames[Math.floor(Math.random() * (lastnames.length - 1)) + 1];",
+									"var email = firstname.toLowerCase()+'.'+lastname.toLowerCase()+Math.floor(Math.random() * 90 + 10)+'@gmail.com';",
+									"pm.environment.set('FirstName',firstname);",
+									"pm.environment.set('LastName',lastname);",
+									"pm.environment.set('email',email);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "54f3b4b4-6636-4248-b594-70b5d44c9b4b",
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"var json = pm.response.json();",
+									"pm.environment.set(\"AccountId\", json.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{sessionid}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"FirstName\": \"{{FirstName}}\",\n    \"LastName\": \"{{LastName}}\",\n    \"RecordTypeId\": \"012D0000000kUBjIAM\",\n    \"Geographic_Location__c\": \"LT\",\n    \"Bank_Account__c\": \"ES6621001813871268077917\",\n    \"PersonEmail\": \"{{email}}\",\n    \"Brand__c\": \"CREDIT24\",\n    \"SSN__c\":\"123456789\",\n    \"IdentificationMD5__c\":\"123456789\",\n    \"IdentificationStatus__c\": \"PENDING_IDENTIFICATION\"\n}"
+						},
+						"url": {
+							"raw": "{{instance}}/services/data/{{API_VERSION}}/sobjects/Account",
+							"host": [
+								"{{instance}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"{{API_VERSION}}",
+								"sobjects",
+								"Account"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SF Create Payout",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "32a54995-9910-406a-8906-6533f26dc4f8",
+								"exec": [
+									"var firstnames = [",
+									"'Liam',",
+									"'Noah',",
+									"'William',",
+									"'James',",
+									"'Logan',",
+									"'Benjamin',",
+									"'Mason',",
+									"'Elijah',",
+									"'Oliver',",
+									"'Jacob',",
+									"'Oliver',",
+									"'Harry',",
+									"'George',",
+									"'Noah',",
+									"'Jack',",
+									"'Jacob',",
+									"'Leo',",
+									"'Oscar',",
+									"'Charlie',",
+									"'Muhammad'",
+									"];",
+									"",
+									"var lastnames = [",
+									"'Smith',",
+									"'Jones',",
+									"'Williams',",
+									"'Taylor',",
+									"'Davies',",
+									"'Brown',",
+									"'Wilson',",
+									"'Evans',",
+									"'Thomas',",
+									"'Johnson',",
+									"'Roberts',",
+									"'Walker',",
+									"'Wright',",
+									"'Robinson',",
+									"'Thompson',",
+									"'White',",
+									"'Hughes',",
+									"'Edwards',",
+									"'Green',",
+									"'Lewis',",
+									"'Wood',",
+									"'Harris',",
+									"'Martin',",
+									"'Jackson',",
+									"'Clarke'",
+									"];",
+									"var firstname = firstnames[Math.floor(Math.random() * (firstnames.length - 1)) + 1];",
+									"var lastname = lastnames[Math.floor(Math.random() * (lastnames.length - 1)) + 1];",
+									"var email = firstname.toLowerCase()+'.'+lastname.toLowerCase()+Math.floor(Math.random() * 90 + 10)+'@gmail.com';",
+									"pm.environment.set('FirstName',firstname);",
+									"pm.environment.set('LastName',lastname);",
+									"pm.environment.set('email',email);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "54f3b4b4-6636-4248-b594-70b5d44c9b4b",
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"var json = pm.response.json();",
+									"pm.environment.set(\"PayoutId\", json.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{sessionid}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\t\"ReceiverBankAccountNumber__c\": \"014261140822258440\"\r\n}"
+						},
+						"url": {
+							"raw": "{{instance}}/services/data/{{API_VERSION}}/sobjects/Payout__c",
+							"host": [
+								"{{instance}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"{{API_VERSION}}",
+								"sobjects",
+								"Payout__c"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SF Create Payout Transfer",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "32a54995-9910-406a-8906-6533f26dc4f8",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "54f3b4b4-6636-4248-b594-70b5d44c9b4b",
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"var json = pm.response.json();",
+									"pm.environment.set(\"PayoutTransferId\", json.id);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{sessionid}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\t\"Payout__c\": \"{{PayoutId}}\", \r\n\t\"ReceiverAccount__c\": \"{{AccountId}}\", \r\n\t\"ReceiverName__c\": \"{{AccountId}}\", \r\n\t\"SenderName__c\": \"HAPI\", \r\n\t\"Title__c\": \"test transfer\"\r\n}"
+						},
+						"url": {
+							"raw": "{{instance}}/services/data/{{API_VERSION}}/sobjects/PayoutTransfer__c",
+							"host": [
+								"{{instance}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"{{API_VERSION}}",
+								"sobjects",
+								"PayoutTransfer__c"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SF Create External Verification Report",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "32a54995-9910-406a-8906-6533f26dc4f8",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "54f3b4b4-6636-4248-b594-70b5d44c9b4b",
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"var json = pm.response.json();",
+									"pm.environment.set(\"EVRID\", json.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{sessionid}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"Account__c\": \"{{AccountId}}\",\n    \"Application__c\": \"{{PendingAppId}}\",\n    \"JointAccount__c\": true\n}"
+						},
+						"url": {
+							"raw": "{{instance}}/services/data/{{API_VERSION}}/sobjects/External_Verification_Report__c/",
+							"host": [
+								"{{instance}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"{{API_VERSION}}",
+								"sobjects",
+								"External_Verification_Report__c",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SF Create Lead",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "32a54995-9910-406a-8906-6533f26dc4f8",
+								"exec": [
+									"var firstnames = [",
+									"'Liam',",
+									"'Noah',",
+									"'William',",
+									"'James',",
+									"'Logan',",
+									"'Benjamin',",
+									"'Mason',",
+									"'Elijah',",
+									"'Oliver',",
+									"'Jacob',",
+									"'Oliver',",
+									"'Harry',",
+									"'George',",
+									"'Noah',",
+									"'Jack',",
+									"'Jacob',",
+									"'Leo',",
+									"'Oscar',",
+									"'Charlie',",
+									"'Muhammad'",
+									"];",
+									"",
+									"var lastnames = [",
+									"'Smith',",
+									"'Jones',",
+									"'Williams',",
+									"'Taylor',",
+									"'Davies',",
+									"'Brown',",
+									"'Wilson',",
+									"'Evans',",
+									"'Thomas',",
+									"'Johnson',",
+									"'Roberts',",
+									"'Walker',",
+									"'Wright',",
+									"'Robinson',",
+									"'Thompson',",
+									"'White',",
+									"'Hughes',",
+									"'Edwards',",
+									"'Green',",
+									"'Lewis',",
+									"'Wood',",
+									"'Harris',",
+									"'Martin',",
+									"'Jackson',",
+									"'Clarke'",
+									"];",
+									"var firstname = firstnames[Math.floor(Math.random() * (firstnames.length - 1)) + 1];",
+									"var lastname = lastnames[Math.floor(Math.random() * (lastnames.length - 1)) + 1];",
+									"var email = firstname.toLowerCase()+'.'+lastname.toLowerCase()+Math.floor(Math.random() * 90 + 10)+'@gmail.com';",
+									"pm.environment.set('FirstName',firstname);",
+									"pm.environment.set('LastName',lastname);",
+									"pm.environment.set('email',email);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "54f3b4b4-6636-4248-b594-70b5d44c9b4b",
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"var json = pm.response.json();",
+									"pm.environment.set(\"LeadId\", json.id);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{sessionid}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"LastName\":\"{{LastName}}\",\n    \"RecordTypeId\": \"01257000000QqdMAAS\",\n    \"Reject_Reason__c\": \"UNDERAGE\"\n}"
+						},
+						"url": {
+							"raw": "{{instance}}/services/data/{{API_VERSION}}/sobjects/Lead",
+							"host": [
+								"{{instance}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"{{API_VERSION}}",
+								"sobjects",
+								"Lead"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SF Create Bank Payment Batch",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "32a54995-9910-406a-8906-6533f26dc4f8",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "54f3b4b4-6636-4248-b594-70b5d44c9b4b",
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"const json = pm.response.json();",
+									"pm.environment.set(\"BankPaymentBatchId\", json.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{sessionid}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"Processor__c\": \"OxxoBankPaymentProcessor\"\n}"
+						},
+						"url": {
+							"raw": "{{instance}}/services/data/{{API_VERSION}}/sobjects/Bank_Payment_Batch__c",
+							"host": [
+								"{{instance}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"{{API_VERSION}}",
+								"sobjects",
+								"Bank_Payment_Batch__c"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SF Create Bank Payment Batch",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "32a54995-9910-406a-8906-6533f26dc4f8",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "54f3b4b4-6636-4248-b594-70b5d44c9b4b",
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"const json = pm.response.json();",
+									"pm.environment.set(\"BankPaymentBatchId\", json.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{sessionid}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"Processor__c\": \"OxxoBankPaymentProcessor\"\n}"
+						},
+						"url": {
+							"raw": "{{instance}}/services/data/{{API_VERSION}}/sobjects/Bank_Payment_Batch__c",
+							"host": [
+								"{{instance}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"{{API_VERSION}}",
+								"sobjects",
+								"Bank_Payment_Batch__c"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SF Create Contract",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "32a54995-9910-406a-8906-6533f26dc4f8",
+								"exec": [
+									"var moment = require('moment');",
+									"pm.environment.set('applicationdate',moment().format());"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "54f3b4b4-6636-4248-b594-70b5d44c9b4b",
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"var json = pm.response.json();",
+									"pm.environment.set(\"ContractId\", json.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{sessionid}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"AccountId\": \"{{AccountId}}\",\n    \"Status\": \"Draft\"\n    \n}"
+						},
+						"url": {
+							"raw": "{{instance}}/services/data/{{API_VERSION}}/sobjects/Contract/",
+							"host": [
+								"{{instance}}"
+							],
+							"path": [
+								"services",
+								"data",
+								"{{API_VERSION}}",
+								"sobjects",
+								"Contract",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SF Create Application",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "32a54995-9910-406a-8906-6533f26dc4f8",
+								"exec": [
+									"var moment = require('moment');",
+									"pm.environment.set('applicationdate',moment().format());"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "54f3b4b4-6636-4248-b594-70b5d44c9b4b",
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"var json = pm.response.json();",
+									"pm.environment.set(\"ApplicationId\", json.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{sessionid}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"Account__c\": \"{{AccountId}}\",\n    \"Status__c\": \"Pending\",\n    \"IP__c\": \"{{IP}}\"\n    \n}"
+						},
+						"url": {
+							"raw": "{{instance}}/services/data{{API_VERSION}}/sobjects/MCBCreditApplication__c/",
+							"host": [
+								"{{instance}}"
+							],
+							"path": [
+								"services",
+								"data{{API_VERSION}}",
+								"sobjects",
+								"MCBCreditApplication__c",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "Get",
+			"item": [
+				{
+					"name": "Verify that PB is Inactive/Deleted",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "32a54995-9910-406a-8906-6533f26dc4f8",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "54f3b4b4-6636-4248-b594-70b5d44c9b4b",
+								"exec": [
+									"const json = pm.response.json();",
+									"switch(pm.response.code){",
+									"  case 200:",
+									"      pm.test(\"Process builder is inactive\", function () {",
+									"       pm.expect(json.activeVersionNumber).to.be.null",
+									"});",
+									"      break;",
+									"  case 404:",
+									"      pm.test(\"Process builder is deleted\", function () {",
+									"});",
+									"      break;",
+									"}",
+									"",
+									"",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{sessionid}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{instance}}/services/metadata/{{API_VERSION}}/components/flowDefinitions/{{processBuilderName}}",
+							"host": [
+								"{{instance}}"
+							],
+							"path": [
+								"services",
+								"metadata",
+								"{{API_VERSION}}",
+								"components",
+								"flowDefinitions",
+								"{{processBuilderName}}"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "pass",
+			"item": [
+				{
+					"name": "google",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "af8436ff-6b2e-4cca-9cb8-b791b66061a9",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "www.google.pl",
+							"host": [
+								"www",
+								"google",
+								"pl"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "retrive collections",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": ""
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}
