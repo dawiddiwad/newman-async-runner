@@ -505,13 +505,6 @@ describe('newman-async-runner [unit]', async function (done) {
         })
     })
     describe('#fetchViaApi', function(){
-        const collectionsEndpoint = 'https://api.getpostman.com/collections/?apikey=API_KEY_POSTMAN';
-        const environmentsEndpoint = 'https://api.getpostman.com/environments/?apikey=API_KEY_POSTMAN';
-        const snippets = 'https://api.getpostman.com/collections/8804262-13f4c16b-dcbb-4440-8198-d60f9061eaff?apikey=API_KEY_POSTMAN';
-        const test = 'https://api.getpostman.com/collections/8804262-b6a908f0-d4a8-4a5e-9ddc-96fed552e863?apikey=API_KEY_POSTMAN';
-        const yolo = 'https://api.getpostman.com/collections/8804262-c4129d67-4b56-44d1-a7cc-3c3da87ec73a?apikey=API_KEY_POSTMAN';
-        const UAT = 'https://api.getpostman.com/environments/8804262-7b563f42-8bed-4ed7-aba7-7eca1e0d6230?apikey=API_KEY_POSTMAN';
-        const SIT = 'https://api.getpostman.com/environments/8804262-d98686c9-d6b6-4be1-b0cb-a2adbb3aa4c4?apikey=API_KEY_POSTMAN';
         before('before #fetchViaApi() tests', async function(){
             sandbox = sinon.createSandbox();
             sandbox.stub(global, 'request').callsFake(callPostmanApi);
@@ -520,7 +513,7 @@ describe('newman-async-runner [unit]', async function (done) {
             sandbox.restore();
         })
         it('fetches single collection', async function(){
-            const collectionPath = yolo;
+            const collectionPath = api_yolo;
             let runner = runnerFactory();
             runner = new runner.NewmanRunner({folders: {collections: collectionPath}});
 
@@ -530,7 +523,7 @@ describe('newman-async-runner [unit]', async function (done) {
             expect(result[0].content).to.have.property('info');
         })
         it('fetches multiple collections', async function(){
-            const collectionPath = collectionsEndpoint;
+            const collectionPath = api_collectionsEndpoint;
             let runner = runnerFactory();
             runner = new runner.NewmanRunner({folders: {collections: collectionPath}});
 
@@ -540,7 +533,7 @@ describe('newman-async-runner [unit]', async function (done) {
             expect(result[0].name).not.equals(result[1].name);
         })
         it('fetches single environment', async function(){
-            const environmentPath = SIT;
+            const environmentPath = api_SIT;
             let runner = runnerFactory();
             runner = new runner.NewmanRunner({folders: {collections: environmentPath}});
 
@@ -551,7 +544,7 @@ describe('newman-async-runner [unit]', async function (done) {
             expect(result[0].content).not.to.have.property('info');
         })
         it('fetches multiple environments', async function(){
-            const environmentPath = environmentsEndpoint;
+            const environmentPath = api_environmentsEndpoint;
             let runner = runnerFactory();
             runner = new runner.NewmanRunner({folders: {collections: environmentPath}});
 
