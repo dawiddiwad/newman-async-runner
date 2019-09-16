@@ -52,44 +52,13 @@ describe('newman-async-runner [unit]', async function (done) {
         })
     })
     describe('#getCollections()', function () {
-        let collectionObjects;
         before(async function () {
-            await createTestFolders(optionsFactory());
-            await fs.mkdirSync(runnerOptions.folders.collections, { recursive: true });
-            await fs.copyFileSync('./test/testdata/collections/yolo.postman_collection.json', './test/collections/yolo.postman_collection.json');
-            await fs.copyFileSync('./test/testdata/collections/yolo.postman_collection.json', './test/collections/yolo.postman_collection2.json');
-            collectionObjects = await new _nar.NewmanRunner(runnerOptions).getCollections();
+            await cleanTestDirectory();
         })
         after(async function () {
             await cleanTestDirectory();
         })
-        it('should generate collections', async function () {
-            assert.equal(collectionObjects.length, 2);
-        })
-        it('collection has name', async function () {
-            assert.equal(collectionObjects[0].name, 'yolo');
-            assert.equal(collectionObjects[1].name, 'yolo');
-
-        })
-        it('collections has folders', async function () {
-            assert.equal(collectionObjects[0].folders.length, 6);
-            assert.equal(collectionObjects[1].folders.length, 6);
-        })
-        it('collection has correct folders content', async function () {
-            expect(collectionObjects[0].folders[0]).to.equal('folder1');
-            expect(collectionObjects[0].folders[1]).to.equal('TO');
-            expect(collectionObjects[0].folders[2]).to.equal('folder1 Copy');
-            expect(collectionObjects[0].folders[3]).to.equal('NIE TO');
-            expect(collectionObjects[0].folders[4]).to.equal('folder2');
-            expect(collectionObjects[0].folders[5]).to.equal('LUZEM');
-            expect(collectionObjects[1].folders[0]).to.equal('folder1');
-            expect(collectionObjects[1].folders[1]).to.equal('TO');
-            expect(collectionObjects[1].folders[2]).to.equal('folder1 Copy');
-            expect(collectionObjects[1].folders[3]).to.equal('NIE TO');
-            expect(collectionObjects[1].folders[4]).to.equal('folder2');
-            expect(collectionObjects[1].folders[5]).to.equal('LUZEM');
-        })
-        it('should return undefined array when there are no collection folders', async function () {
+        it('should return undefined array when there are no collections fetched', async function () {
             let runner = new runnerFactory();
             runner = new runner.NewmanRunner({});
             expect(await runner.getCollections()[0]).to.be.undefined;
@@ -102,48 +71,11 @@ describe('newman-async-runner [unit]', async function (done) {
             runner = new runner.NewmanRunner({ options: { folders: {} } });
             expect(await runner.getCollections()[0]).to.be.undefined;
         })
-        it('read single file collection', async function () {
-            let runner = new runnerFactory();
-            runner = new runner.NewmanRunner({folders: {collections: './test/collections/yolo.postman_collection.json'}});
+        it('calls fetchViaApi() for all api related options')
+        it('calls fetchViaFileSystem() for all local related options')
+        it('calls fetchViaHttp() for all http related options')
+        it('collects all collection: [directories, files, names, uid, id, items] from options')
 
-            let collections = await runner.getCollections();
-            expect(collections.length).to.equal(1);
-            expect(collections[0].name).to.equal('yolo');
-            expect(collections[0].folders[0]).to.equal('folder1');
-            expect(collections[0].folders[1]).to.equal('TO');
-            expect(collections[0].folders[2]).to.equal('folder1 Copy');
-            expect(collections[0].folders[3]).to.equal('NIE TO');
-            expect(collections[0].folders[4]).to.equal('folder2');
-            expect(collections[0].folders[5]).to.equal('LUZEM');
-        })
-        it('calls fetchViaApi() when path does not exist locally', async function(){
-            sandbox = sinon.createSandbox();
-            let runner = new runnerFactory();
-            sandbox.stub(runnerFactory().NewmanRunner.prototype, 'fetchViaApi').callsFake(function(uri){
-                return uri;
-            });
-            sandbox.stub(runnerFactory().NewmanRunner.prototype, 'fetchViaFileSystem').callsFake(function(uri){
-                return 'fail';
-            });
-
-            runner = new runner.NewmanRunner({folders: {collections: pmCollectionsEndpoint}});
-            expect(await runner.getCollections()).to.equal(pmCollectionsEndpoint);
-            sandbox.restore();
-        })
-        it('calls fetchViaFileSystem() when path does not exist locally', async function(){
-            sandbox = sinon.createSandbox();
-            let runner = new runnerFactory();
-            sandbox.stub(runnerFactory().NewmanRunner.prototype, 'fetchViaApi').callsFake(function(uri){
-                return 'fail';
-            });
-            sandbox.stub(runnerFactory().NewmanRunner.prototype, 'fetchViaFileSystem').callsFake(function(uri){
-                return uri;
-            });
-
-            runner = new runner.NewmanRunner({folders: {collections: './'}});
-            expect(await runner.getCollections()).to.equal('./');
-            sandbox.restore();
-        })
     })
     describe('#getEnvironments()', function () {
         let environmentObjects;
@@ -591,12 +523,6 @@ describe('newman-async-runner [unit]', async function (done) {
         it('fetches multiple environments')
         it('throws error on invalid file content')
         it('throws error on invalid path')
-    })
-    describe('#handleCollection', function(){
-        it('returns new Collections object for given collection json')
-    })
-    describe('#handleEnvironment', function(){
-        it('returns new Environment object for given environment json')
     })
     describe('#setupCollections', function(){
         it('runs for each data file')
