@@ -56,6 +56,10 @@ module.exports = {
 			}
 		}
 
+		async fetchViaHttp(url){
+			
+		}
+
 		async fetchViaApi(uri){
 			let response; try{
 				response = await request(uri, {json: true});
@@ -112,17 +116,14 @@ module.exports = {
 		}
 
 		async getCollections() {
-			const collectionsPath = this.options.folders.collections;
-			if (!this.options || !this.options.folders || !collectionsPath) {
-				return [undefined];
-			} else if (this.collectionsFetchedData){
+			if (this.collectionsFetchedData){
 				return this.collectionsFetchedData;
-			} else if (!fs.existsSync(collectionsPath)){
-				this.collectionsFetchedData = await this.fetchViaApi(collectionsPath);
-				return this.collectionsFetchedData;
-			} else {
-				this.collectionsFetchedData = await this.fetchViaFileSystem(collectionsPath);
-				return await this.collectionsFetchedData;
+			} else if (this.options){
+				this.collectionsApiFetchedData = this.options.api ? await this.fetchViaApi(this.options.api) : new Array();
+				this.collectionsHttpFetchedData = this.options.http ? await this.fetchViaHttp(this.options.http) : new Array();
+				this.collectionsLocalFetchedData = this.options.local ? await this.fetchViaFileSystem(this.options.local) : new Array();
+				this.collectionsFetchedData = new Array().concat(this.collectionsApiFetchedData, this.collectionsHttpFetchedData, this.collectionsLocalFetchedData);
+				return this.collectionsFetchedData.length ? this.collectionsFetchedData : [undefined]; 
 			}
 		}
 

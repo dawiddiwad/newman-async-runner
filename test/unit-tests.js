@@ -53,27 +53,41 @@ describe('newman-async-runner [unit]', async function (done) {
     })
     describe('#getCollections()', function () {
         before(async function () {
-            await cleanTestDirectory();
+            sandbox = sinon.createSandbox();
         })
-        after(async function () {
-            await cleanTestDirectory();
+        afterEach(async function () {
+            sandbox.restore();
         })
         it('should return undefined array when there are no collections fetched', async function () {
-            let runner = new runnerFactory();
-            runner = new runner.NewmanRunner({});
+            let runner = runnerFactory({});
             expect(await runner.getCollections()[0]).to.be.undefined;
 
-            runner = new runnerFactory();
-            runner = new runner.NewmanRunner({ options: null });
             expect(await runner.getCollections()[0]).to.be.undefined;
 
-            runner = new runnerFactory();
-            runner = new runner.NewmanRunner({ options: { folders: {} } });
+            runner = runnerFactory({ options: { folders: {} } });
             expect(await runner.getCollections()[0]).to.be.undefined;
         })
-        it('calls fetchViaApi() for all api related options')
-        it('calls fetchViaFileSystem() for all local related options')
-        it('calls fetchViaHttp() for all http related options')
+        it('calls fetchViaApi() for all api related options', async function(){
+            const options = 'api-options';
+            let runner = runnerFactory({api: options});
+            let spy = sandbox.spy(runner, 'fetchViaApi')
+            try{await runner.getCollections();}catch{}
+            expect(spy.calledOnceWith(options)).true;
+        })
+        it('calls fetchViaFileSystem() for all local related options', async function(){
+            const options = 'fileSystem-options';
+            let runner = runnerFactory({local: options});
+            let spy = sandbox.spy(runner, 'fetchViaFileSystem')
+            try{await runner.getCollections();}catch{}
+            expect(spy.calledOnceWith(options)).true;
+        })
+        it('calls fetchViaHttp() for all http related options', async function(){
+            const options = 'http-options';
+            let runner = runnerFactory({http: options});
+            let spy = sandbox.spy(runner, 'fetchViaHttp')
+            try{await runner.getCollections();}catch{}
+            expect(spy.calledOnceWith(options)).true;
+        })
         it('collects all collection: [directories, files, names, uid, id, items] from options')
 
     })

@@ -119,8 +119,9 @@ module.exports = {
         return testData;
     },
     
-    runnerFactory: runnerFactory = function () {
-        return new require('../newman-async-runner');
+    runnerFactory: runnerFactory = function (options) {
+        const runner = require('../newman-async-runner').NewmanRunner;
+        return new runner(options);
     },
 
     cleanTestDirectory: cleanTestDirectory = async function () {
