@@ -63,33 +63,36 @@ module.exports = {
 			
 		}
 
-		async fetchViaApi(uri){
-			let response; try{
-				response = await request(uri, {json: true});
-			} catch (error){
-				throw new Error('path: ' + uri + ' does not exist or is invalid, unable to generate newman runs.\nCause: ' + error.toString());
-			}
-			if (response.collection){
-				return [new Collection(response.collection)];
-			} else if (response.collections){
-				let collectionObjects = new Array();
-				for (let collection of response.collections){
-					collection = await this.fetchViaApi(this.pmCollectionsEndpoint + collection.uid + '?' + new URL(uri).searchParams.toString());
-					collectionObjects.push(collection.pop());
-				}
-				return collectionObjects.length ? collectionObjects : [undefined];
-			} else if (response.environment){
-				return [new Environment(response.environment)];
-			} else if (response.environments){
-				let environmentObjects = new Array();
-				for (let environment of response.environments){
-					environment = await this.fetchViaApi(this.pmEnvironmentsEndpoint + environment.uid + '?' + new URL(uri).searchParams.toString());
-					environmentObjects.push(environment.pop());
-				}
-				return environmentObjects.length ? environmentObjects : [undefined];
-			} else {
-				throw new Error('path: ' + uri + ' does not exist or is invalid, unable to generate newman runs.\nResponse was: ' + response.toString());
-			}
+		async fetchViaApi(apiOptions){
+			if (apiOptions.collection_names) await this.fetchByNames();
+			else if (apiOptions.collection_uids) await this.fetchByUids();
+			else if (apiOptions.collection_ids) await this.fetchByIds();
+			// let response; try{
+			// 	response = await request(uri, {json: true});
+			// } catch (error){
+			// 	throw new Error('path: ' + uri + ' does not exist or is invalid, unable to generate newman runs.\nCause: ' + error.toString());
+			// }
+			// if (response.collection){
+			// 	return [new Collection(response.collection)];
+			// } else if (response.collections){
+			// 	let collectionObjects = new Array();
+			// 	for (let collection of response.collections){
+			// 		collection = await this.fetchViaApi(this.pmCollectionsEndpoint + collection.uid + '?' + new URL(uri).searchParams.toString());
+			// 		collectionObjects.push(collection.pop());
+			// 	}
+			// 	return collectionObjects.length ? collectionObjects : [undefined];
+			// } else if (response.environment){
+			// 	return [new Environment(response.environment)];
+			// } else if (response.environments){
+			// 	let environmentObjects = new Array();
+			// 	for (let environment of response.environments){
+			// 		environment = await this.fetchViaApi(this.pmEnvironmentsEndpoint + environment.uid + '?' + new URL(uri).searchParams.toString());
+			// 		environmentObjects.push(environment.pop());
+			// 	}
+			// 	return environmentObjects.length ? environmentObjects : [undefined];
+			// } else {
+			// 	throw new Error('path: ' + uri + ' does not exist or is invalid, unable to generate newman runs.\nResponse was: ' + response.toString());
+			// }
 		}
 
 		async fetchViaFileSystem(filePath){

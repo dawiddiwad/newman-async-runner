@@ -458,82 +458,18 @@ describe('newman-async-runner [unit]', async function (done) {
     describe('#fetchViaApi', function(){
         before('before #fetchViaApi() tests', async function(){
             sandbox = sinon.createSandbox();
-            sandbox.stub(global, 'request').callsFake(callPostmanApi);
         })
-        after('after #fetchViaApi() tests', async function(){
+        afterEach('after #fetchViaApi() tests', async function(){
             sandbox.restore();
         })
-        it('fetches single collection', async function(){
-            const collectionPath = api_yolo;
-            let runner = runnerFactory();
-            runner = new runner.NewmanRunner({folders: {collections: collectionPath}});
-
-            const result = await runner.fetchViaApi(collectionPath);
-            expect(result).to.be.a('Array');
-            expect(result.length).equals(1);
-            expect(result[0].content).to.have.property('info');
-        })
-        it('fetches multiple collections', async function(){
-            const collectionPath = api_collectionsEndpoint;
-            let runner = runnerFactory();
-            runner = new runner.NewmanRunner({folders: {collections: collectionPath}});
-
-            const result = await runner.fetchViaApi(collectionPath);
-            expect(result).to.be.a('Array');
-            expect(result.length).equals(3);
-            expect(result[0].name).not.equals(result[1].name);
-        })
-        it('fetches single environment', async function(){
-            const environmentPath = api_SIT;
-            let runner = runnerFactory();
-            runner = new runner.NewmanRunner({folders: {collections: environmentPath}});
-
-            const result = await runner.fetchViaApi(environmentPath);
-            expect(result).to.be.a('Array');
-            expect(result.length).equals(1);
-            expect(result[0].content).to.have.property('name');
-            expect(result[0].content).not.to.have.property('info');
-        })
-        it('fetches multiple environments', async function(){
-            const environmentPath = api_environmentsEndpoint;
-            let runner = runnerFactory();
-            runner = new runner.NewmanRunner({folders: {collections: environmentPath}});
-
-            const result = await runner.fetchViaApi(environmentPath);
-            expect(result).to.be.a('Array');
-            expect(result.length).equals(2);
-            expect(result[0].name).not.equals(result[1].name);
-        })
-        it('throws error on request exception', async function(){
-            const uri = 'error';
-            let runner = runnerFactory();
-            runner = new runner.NewmanRunner({folders: {collections: uri}});
-
-            let hasThrownError = false;
-            try{
-                await runner.fetchViaApi(uri);
-            } catch(error){
-                expect(error).to.be.a('Error');
-                expect(error.message).equals('path: ' + uri +' does not exist or is invalid, unable to generate newman runs.\nCause: Error: request error');
-                hasThrownError = true;
-            }
-            expect(hasThrownError).to.be.true;
-        })
-        it('throws error on invalid uri', async function(){
-            const uri = 'https://www.google.com';
-            let runner = runnerFactory();
-            runner = new runner.NewmanRunner({folders: {collections: uri}});
-
-            let hasThrownError = false;
-            try{
-                await runner.fetchViaApi(uri);
-            } catch(error){
-                expect(error).to.be.a('Error');
-                expect(error.message).equals('path: ' + uri + ' does not exist or is invalid, unable to generate newman runs.\nResponse was: ' + uri);
-                hasThrownError = true;
-            }
-            expect(hasThrownError).to.be.true;
-        })
+        it('fetches all collection_names')
+        it('fetches all collection_uids')
+        it('fetches all collection_ids')
+        it('uses minimal required api calls')
+        it('returns array of all fetched collection objects')
+        it('returns empty array if no collections are fetched')
+        it('re-throws friendly error on request error')
+        it('throws acumulated error msg for all not found resources')
     })
     describe('#fetchViaFileSystem', function(){
         it('fetches single collection')
