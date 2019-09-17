@@ -2,33 +2,7 @@ import ('./test-utils');
 
 describe('newman-async-runner [unit]', async function (done) {
     this.timeout(10000);
-    const pmCollectionsEndpoint = 'https://api.getpostman.com/collections/';
-    let
-        assert,
-        _nar,
-        sandbox,
-        runnerOptions;
-    function resetOptions() {
-        runnerOptions = {
-            parallelFolderRuns: false,
-            folders: {
-                collections: './test/collections/',
-                environments: './test/environments/',
-                reports: './test/reports/',
-                data: './test/data/',
-                templates: './test/templates/'
-            },
-            reporter_template: 'htmlreqres.hbs',
-            anonymizeFilter: 'rebelia',
-            specific_collection_items_to_run: ['folder1 Copy', 'LUZEM']
-        };
-    }
-
-    before(function () {
-        assert = require('assert');
-        _nar = runnerFactory();
-        resetOptions();
-    })
+    let sandbox;
     describe('#setupFolders()', function () {
         it('throws error when no collections folder is set in runner options', async function () {
             let options = new Object();
@@ -60,12 +34,7 @@ describe('newman-async-runner [unit]', async function (done) {
         })
         it('should return undefined array when there are no collections fetched', async function () {
             let runner = runnerFactory({});
-            expect(await runner.getCollections()[0]).to.be.undefined;
-
-            expect(await runner.getCollections()[0]).to.be.undefined;
-
-            runner = runnerFactory({ options: { folders: {} } });
-            expect(await runner.getCollections()[0]).to.be.undefined;
+            expect(await runner.getCollections()).to.eql([undefined]);
         })
         it('calls fetchViaApi() for all api related options', async function(){
             const options = 'api-options';
@@ -88,8 +57,44 @@ describe('newman-async-runner [unit]', async function (done) {
             try{await runner.getCollections();}catch{}
             expect(spy.calledOnceWith(options)).true;
         })
-        it('collects all collection: [directories, files, names, uid, id, items] from options')
+        it('returns api-http-local fetched collection objects arrays as single collections objects array', async function(){
+            const apiOptions = ['c1', 'c2', 'c3'];
+            const localOptions = ['c1', 'c2'];
+            const httpOptions = ['c4'];
+            const runner = runnerFactory({api: apiOptions, http: httpOptions, local: localOptions});
+            sandbox.stub(runner, 'fetchViaApi').returns(apiOptions);
+            sandbox.stub(runner, 'fetchViaHttp').returns(httpOptions);
+            sandbox.stub(runner, 'fetchViaFileSystem').returns(localOptions);
+            const returnedCollections = await runner.getCollections();
 
+            expect(returnedCollections).to.have.members(new Array().concat(apiOptions, httpOptions, localOptions));
+        })
+        it('it ignores undefined api-http-local options', async function(){
+            const runner = runnerFactory({});
+            const returnedCollections = await runner.getCollections();
+            expect(returnedCollections).to.eql([undefined]);
+        })
+        it('returns collections pre-fetched data if defined', async function(){
+            const runner = runnerFactory({});
+            runner.collectionsFetchedData = 'something';
+            expect(await runner.getCollections()).equals('something');
+
+            delete runner.collectionsFetchedData;
+            expect(await runner.getCollections()).not.equals('something');
+        })
+        it('stores fetched data', async function(){
+            const apiOptions = ['c1', 'c2', 'c3'];
+            const localOptions = ['c1', 'c2'];
+            const httpOptions = ['c4'];
+            const runner = runnerFactory({api: apiOptions, http: httpOptions, local: localOptions});
+            sandbox.stub(runner, 'fetchViaApi').returns(apiOptions);
+            sandbox.stub(runner, 'fetchViaHttp').returns(httpOptions);
+            sandbox.stub(runner, 'fetchViaFileSystem').returns(localOptions);
+
+            expect(runner.collectionsFetchedData).to.be.undefined;
+            await runner.getCollections();
+            expect(runner.collectionsFetchedData).to.have.members(new Array().concat(apiOptions, localOptions, httpOptions));
+        })
     })
     describe('#getEnvironments()', function () {
         let environmentObjects;

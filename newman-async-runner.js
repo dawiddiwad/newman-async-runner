@@ -39,6 +39,9 @@ module.exports = {
 
 	NewmanRunner: class NewmanRunner {
 		constructor(options) {
+			if (!options){
+				throw new Error('no options defined for NewmanRunner - unable to generate runs');
+			}
 			this.collectionRuns = new Array();
 			this.collectionRuns.results = new Array();
 			this.options = options;
@@ -118,13 +121,13 @@ module.exports = {
 		async getCollections() {
 			if (this.collectionsFetchedData){
 				return this.collectionsFetchedData;
-			} else if (this.options){
+			} else {
 				this.collectionsApiFetchedData = this.options.api ? await this.fetchViaApi(this.options.api) : new Array();
 				this.collectionsHttpFetchedData = this.options.http ? await this.fetchViaHttp(this.options.http) : new Array();
 				this.collectionsLocalFetchedData = this.options.local ? await this.fetchViaFileSystem(this.options.local) : new Array();
 				this.collectionsFetchedData = new Array().concat(this.collectionsApiFetchedData, this.collectionsHttpFetchedData, this.collectionsLocalFetchedData);
 				return this.collectionsFetchedData.length ? this.collectionsFetchedData : [undefined]; 
-			}
+			} 
 		}
 
 		async getEnvironments() {
