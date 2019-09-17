@@ -181,7 +181,7 @@ module.exports = {
             case 'error':
                 throw new Error("request error");
             default:
-                return uri;
+                throw new Error('unsupported uri: ' + uri);
         }
     },
 
@@ -209,8 +209,8 @@ module.exports = {
                 return await JSON.parse(fs.readFileSync('./test/testdata/api/SIT.postman_environment.json'));
             case 'error':
                 throw new Error("file system error");
-            default:
-                return url;                
+                default:
+                    throw new Error('unsupported url: ' + url);             
         }
     }
 }

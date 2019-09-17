@@ -462,7 +462,17 @@ describe('newman-async-runner [unit]', async function (done) {
         afterEach('after #fetchViaApi() tests', async function(){
             sandbox.restore();
         })
-        it('fetches all collection_names')
+        it('fetches all collection_names', async function(){
+            const runnerOptions = {api: {key: api_key, collection_names: ['yolo', 'snippets']}}
+            let runner = runnerFactory(runnerOptions);
+            sandbox.stub(global, 'request').callsFake(callPostmanApi);
+
+            let fetchedCollections = await runner.fetchViaApi(runnerOptions.api) 
+            expect(fetchedCollections.length).equals(runnerOptions.api.collection_names.length);
+            for (index in fetchedCollections){
+                expect(fetchedCollections[index].name).equals(runnerOptions.api.collection_names[index]);
+            }  
+        })
         it('fetches all collection_uids')
         it('fetches all collection_ids')
         it('uses minimal required api calls')
