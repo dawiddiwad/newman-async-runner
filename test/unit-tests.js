@@ -581,7 +581,7 @@ describe('newman-async-runner [unit]', async function (done) {
             await runner.fetchViaApi(runnerOptions.api)
             } catch (error){
                 expect(error).to.be.a('Error');
-                expect(error.message).equals('could not find collections with: collection-names: ' 
+                expect(error.message).equals('could not find collections via postman api for: collection-names: ' 
                     + runnerOptions.api.collection_names[0]
                     + ', collection-ids: '
                     + runnerOptions.api.collection_ids[0]

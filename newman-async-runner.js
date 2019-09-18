@@ -64,11 +64,11 @@ module.exports = {
 		}
 
 		async fetchViaApi(apiOptions){
-			const apiKey = apiOptions.key;
 			let collectionObjects = new Array();
 			let unmatchedCollections = new Array();
 			const pmCollectionsEndpoint = this.pmCollectionsEndpoint;
 			if (!this.fetchedApiCollections) this.fetchedApiCollections = await fetchCollectionsEndpoint();
+			if (!apiOptions.key) throw new Error('postman api key option is not defined -> please define it as string under api.key');
 			const fetchedApiCollections = this.fetchedApiCollections;
 
 			async function fetchAndPush(uid){
@@ -79,7 +79,6 @@ module.exports = {
 				}catch(e){
 					throw new Error('unable to fetch collection via postman api' + uid + ' - cause: ' + e);
 				}
-
 			}
 			async function fetchCollectionsEndpoint(){
 				try{
@@ -89,7 +88,6 @@ module.exports = {
 				}catch(e){
 					throw new Error('unable to fetch postman api collections endpoint - cause: ' + e);
 				}
-
 			}
 			async function fetchByUids(uids){
 				for (const uid of uids){
