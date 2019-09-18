@@ -570,8 +570,8 @@ describe('newman-async-runner [unit]', async function (done) {
         })
         it('throws acumulated error msg for all not found resources', async function(){
             const runnerOptions = {api: {key: api_key, 
-                collection_ids: ['invalid','invalid'],
-                collection_names: ['invalid', 'invalid']
+                collection_ids: ['invalid', (await callPostmanApi(api_yolo)).collection.info._postman_id],
+                collection_names: [(await callPostmanApi(api_yolo)).collection.info.name, 'invalid']
             }};
             let runner = runnerFactory(runnerOptions);
             sandbox.stub(global, 'request').callsFake(callPostmanApi);
@@ -582,7 +582,7 @@ describe('newman-async-runner [unit]', async function (done) {
             } catch (error){
                 expect(error).to.be.a('Error');
                 expect(error.message).equals('could not find collections via postman api for: collection-names: ' 
-                    + runnerOptions.api.collection_names[0]
+                    + runnerOptions.api.collection_names[1]
                     + ', collection-ids: '
                     + runnerOptions.api.collection_ids[0]
                 );
@@ -592,9 +592,9 @@ describe('newman-async-runner [unit]', async function (done) {
         })
     })
     describe('#fetchViaFileSystem', function(){
-        it('fetches single collection')
-        it('fetches multiple collections')
-        it('fetches single environment')
+        it('fetches all collection_names and returns Collections')
+        it('fetches all collection_uids and returns Collections')
+        it('fetches all collection_ids and returns Collections')
         it('fetches multiple environments')
         it('throws error on invalid file content')
         it('throws error on invalid path')

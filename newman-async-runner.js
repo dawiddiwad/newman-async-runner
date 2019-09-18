@@ -64,8 +64,8 @@ module.exports = {
 		}
 
 		async fetchViaApi(apiOptions){
-			let collectionObjects = new Array();
-			let unmatchedCollections = new Array();
+			let collectionObjects = [];
+			let unmatchedCollections = [];
 			const pmCollectionsEndpoint = this.pmCollectionsEndpoint;
 			if (!this.fetchedApiCollections) this.fetchedApiCollections = await fetchCollectionsEndpoint();
 			if (!apiOptions.key) throw new Error('postman api key option is not defined -> please define it as string under api.key');
@@ -75,7 +75,7 @@ module.exports = {
 				try{
 					const fetched = await request(pmCollectionsEndpoint + uid + '?apikey=' + apiOptions.key, {json: true});
 					if (!fetched || !fetched.collection) throw new Error("response was: " + fetched);
-					else collectionObjects.push(new Collection(fetched.collection));
+					else return collectionObjects.push(new Collection(fetched.collection));
 				}catch(e){
 					throw new Error('unable to fetch collection via postman api' + uid + ' - cause: ' + e);
 				}
@@ -96,26 +96,26 @@ module.exports = {
 			}
 			async function fetchByNames(names){
 				for (const eachName of names){
-					let found;
 					for (const eachCollection of fetchedApiCollections){
-						if (eachCollection.name == eachName){
-							await fetchAndPush(eachCollection.uid);
-							found = true;
+						if (eachCollection.name === eachName){
+							fetchByNames.found = await fetchAndPush(eachCollection.uid);
 						}
 					}
-					if(!found) unmatchedCollections.push(' collection-names: ' + eachName);
+					if (fetchByNames.found) delete fetchByNames.found; 
+					else unmatchedCollections.push(' collection-names: ' + eachName);
+
 				}
 			}
 			async function fetchByIds(ids){
 				for (const eachId of ids){
-					let found;
 					for (const eachCollection of fetchedApiCollections){
-						if (eachCollection.id == eachId){
-							await fetchAndPush(eachCollection.uid);
-							found = true;
+						if (eachCollection.id === eachId){
+							fetchByIds.found = await fetchAndPush(eachCollection.uid);
 						}
 					}
-					if(!found) unmatchedCollections.push(' collection-ids: ' + eachId);
+					if(fetchByIds.found) delete fetchByIds.found;
+					else unmatchedCollections.push(' collection-ids: ' + eachId);
+					
 				}
 			}
 
@@ -131,7 +131,7 @@ module.exports = {
 				let files = fs.readdirSync(filePath).filter(function (e) {
 					return path.extname(e).toLowerCase() === '.json';
 				});
-				let fileObjects = new Array();
+				let fileObjects = [];
 				for (let file of files){
 					file = await this.fetchViaFileSystem(filePath + file);
 					fileObjects.push(file.pop());
@@ -156,10 +156,10 @@ module.exports = {
 			if (this.collectionsFetchedData){
 				return this.collectionsFetchedData;
 			} else {
-				this.collectionsApiFetchedData = this.options.api ? await this.fetchViaApi(this.options.api) : new Array();
-				this.collectionsHttpFetchedData = this.options.http ? await this.fetchViaHttp(this.options.http) : new Array();
-				this.collectionsLocalFetchedData = this.options.local ? await this.fetchViaFileSystem(this.options.local) : new Array();
-				this.collectionsFetchedData = new Array().concat(this.collectionsApiFetchedData, this.collectionsHttpFetchedData, this.collectionsLocalFetchedData);
+				this.collectionsApiFetchedData = this.options.api ? await this.fetchViaApi(this.options.api) : [];
+				this.collectionsHttpFetchedData = this.options.http ? await this.fetchViaHttp(this.options.http) : [];
+				this.collectionsLocalFetchedData = this.options.local ? await this.fetchViaFileSystem(this.options.local) : [];
+				this.collectionsFetchedData = [].concat(this.collectionsApiFetchedData, this.collectionsHttpFetchedData, this.collectionsLocalFetchedData);
 				return this.collectionsFetchedData.length ? this.collectionsFetchedData : [undefined]; 
 			} 
 		}
