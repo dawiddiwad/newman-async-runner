@@ -19,7 +19,7 @@ module.exports = {
     async: async = require('async'),
     process: process = require('process'),
 
-    api_key: api_key = '?apikey=API_KEY_POSTMAN',
+    api_key: api_key = 'API_KEY_POSTMAN',
     api_collectionsEndpoint: api_collectionsEndpoint = 'https://api.getpostman.com/collections/?apikey=API_KEY_POSTMAN',
     api_environmentsEndpoint: api_environmentsEndpoint = 'https://api.getpostman.com/environments/?apikey=API_KEY_POSTMAN',
     api_snippets: api_snippets = 'https://api.getpostman.com/collections/8804262-13f4c16b-dcbb-4440-8198-d60f9061eaff?apikey=API_KEY_POSTMAN',
@@ -180,6 +180,8 @@ module.exports = {
                 return {environment:await JSON.parse(fs.readFileSync('./test/testdata/api/SIT.postman_environment.json'))};
             case 'error':
                 throw new Error("request error");
+            case 'empty json':
+                return {};
             default:
                 throw new Error('unsupported uri: ' + uri);
         }

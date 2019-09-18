@@ -64,16 +64,32 @@ module.exports = {
 		}
 
 		async fetchViaApi(apiOptions){
-			const pmCollectionsEndpoint = this.pmCollectionsEndpoint;
 			const apiKey = apiOptions.key;
 			let collectionObjects = new Array();
-			let endpointResponse;
-			async function fetchEndpoint(){
-				endpointResponse = await request(pmCollectionsEndpoint + apiKey, {json: true});
-			}
+			let unmatchedCollections = new Array();
+			const pmCollectionsEndpoint = this.pmCollectionsEndpoint;
+			if (!this.fetchedApiCollections) this.fetchedApiCollections = await fetchCollectionsEndpoint();
+			const fetchedApiCollections = this.fetchedApiCollections;
+
 			async function fetchAndPush(uid){
-				const fetchedCollection = await request(pmCollectionsEndpoint + uid + apiKey, {json: true})
-				collectionObjects.push(new Collection(fetchedCollection.collection));
+				try{
+					const fetched = await request(pmCollectionsEndpoint + uid + '?apikey=' + apiOptions.key, {json: true});
+					if (!fetched || !fetched.collection) throw new Error("response was: " + fetched);
+					else collectionObjects.push(new Collection(fetched.collection));
+				}catch(e){
+					throw new Error('unable to fetch collection via postman api' + uid + ' - cause: ' + e);
+				}
+
+			}
+			async function fetchCollectionsEndpoint(){
+				try{
+					const fetched = await request(pmCollectionsEndpoint + '?apikey=' + apiOptions.key, {json: true});
+					if (!fetched || !fetched.collections) throw new Error("response was: " + fetched);
+					else return fetched.collections;
+				}catch(e){
+					throw new Error('unable to fetch postman api collections endpoint - cause: ' + e);
+				}
+
 			}
 			async function fetchByUids(uids){
 				for (const uid of uids){
@@ -81,25 +97,35 @@ module.exports = {
 				}
 			}
 			async function fetchByNames(names){
-				if (!endpointResponse) await fetchEndpoint();
-				for (const name of names){
-					for (const collection of endpointResponse.collections){
-						if (collection.name === name) await fetchAndPush(collection.uid);
+				for (const eachName of names){
+					let found;
+					for (const eachCollection of fetchedApiCollections){
+						if (eachCollection.name == eachName){
+							await fetchAndPush(eachCollection.uid);
+							found = true;
+						}
 					}
+					if(!found) unmatchedCollections.push(' collection-names: ' + eachName);
 				}
 			}
 			async function fetchByIds(ids){
-				if (!endpointResponse) await fetchEndpoint();
-				for (const id of ids){
-					for (const collection of endpointResponse.collections){
-						if (collection.id === id) await fetchAndPush(collection.uid);
+				for (const eachId of ids){
+					let found;
+					for (const eachCollection of fetchedApiCollections){
+						if (eachCollection.id == eachId){
+							await fetchAndPush(eachCollection.uid);
+							found = true;
+						}
 					}
+					if(!found) unmatchedCollections.push(' collection-ids: ' + eachId);
 				}
 			}
+
 			if (apiOptions.collection_names) await fetchByNames(apiOptions.collection_names);
 			if (apiOptions.collection_uids) await fetchByUids(apiOptions.collection_uids);
 			if (apiOptions.collection_ids) await fetchByIds(apiOptions.collection_ids);
-			return collectionObjects.length ? collectionObjects : new Array();
+			if (unmatchedCollections.length) throw new Error('could not find collections via postman api for:' + [...new Set(unmatchedCollections)].toString())
+			else return collectionObjects;
 		}
 
 		async fetchViaFileSystem(filePath){

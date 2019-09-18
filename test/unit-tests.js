@@ -39,22 +39,22 @@ describe('newman-async-runner [unit]', async function (done) {
         it('calls fetchViaApi() for all api related options', async function(){
             const options = 'api-options';
             let runner = runnerFactory({api: options});
-            let spy = sandbox.spy(runner, 'fetchViaApi')
-            try{await runner.getCollections();}catch{}
+            let spy = sandbox.stub(runner, 'fetchViaApi').callsFake();
+            await runner.getCollections()
             expect(spy.calledOnceWith(options)).true;
         })
         it('calls fetchViaFileSystem() for all local related options', async function(){
             const options = 'fileSystem-options';
             let runner = runnerFactory({local: options});
-            let spy = sandbox.spy(runner, 'fetchViaFileSystem')
-            try{await runner.getCollections();}catch{}
+            let spy = sandbox.stub(runner, 'fetchViaFileSystem').callsFake();
+            await runner.getCollections()
             expect(spy.calledOnceWith(options)).true;
         })
         it('calls fetchViaHttp() for all http related options', async function(){
             const options = 'http-options';
             let runner = runnerFactory({http: options});
-            let spy = sandbox.spy(runner, 'fetchViaHttp')
-            try{await runner.getCollections();}catch{}
+            let spy = sandbox.stub(runner, 'fetchViaHttp').callsFake();
+            await runner.getCollections()
             expect(spy.calledOnceWith(options)).true;
         })
         it('returns api-http-local fetched collection objects arrays as single collections objects array', async function(){
@@ -462,24 +462,134 @@ describe('newman-async-runner [unit]', async function (done) {
         afterEach('after #fetchViaApi() tests', async function(){
             sandbox.restore();
         })
-        it('fetches all collection_names', async function(){
-            const runnerOptions = {api: {key: api_key, collection_names: ['yolo', 'snippets']}}
+        it('fetches all collection_names and returns Collections', async function(){
+            const runnerOptions = {api: {key: api_key, collection_names: [
+                (await callPostmanApi(api_yolo)).collection.info.name,
+                (await callPostmanApi(api_snippets)).collection.info.name
+            ]}};
             let runner = runnerFactory(runnerOptions);
             sandbox.stub(global, 'request').callsFake(callPostmanApi);
 
-            let fetchedCollections = await runner.fetchViaApi(runnerOptions.api) 
+            let fetchedCollections = await runner.fetchViaApi(runnerOptions.api);
             expect(fetchedCollections.length).equals(runnerOptions.api.collection_names.length);
             for (index in fetchedCollections){
                 expect(fetchedCollections[index].name).equals(runnerOptions.api.collection_names[index]);
             }  
         })
-        it('fetches all collection_uids')
-        it('fetches all collection_ids')
-        it('uses minimal required api calls')
-        it('returns array of all fetched collection objects')
-        it('returns empty array if no collections are fetched')
-        it('re-throws friendly error on request error')
-        it('throws acumulated error msg for all not found resources')
+        it('fetches all collection_uids and returns Collections', async function(){
+            const runnerOptions = {api: {key: api_key, collection_uids: [
+                (await callPostmanApi(api_collectionsEndpoint)).collections[0].uid,
+                (await callPostmanApi(api_collectionsEndpoint)).collections[1].uid
+            ]}};
+            let runner = runnerFactory(runnerOptions);
+            sandbox.stub(global, 'request').callsFake(callPostmanApi);
+
+            let fetchedCollections = await runner.fetchViaApi(runnerOptions.api); 
+            expect(fetchedCollections.length).equals(runnerOptions.api.collection_uids.length);
+            for (index in fetchedCollections){
+                expect(runnerOptions.api.collection_uids[index]).contains(fetchedCollections[index].content.info._postman_id);
+            }              
+        })
+        it('fetches all collection_ids and returns Collections', async function(){
+            const runnerOptions = {api: {key: api_key, collection_ids: [
+                (await callPostmanApi(api_collectionsEndpoint)).collections[0].id,
+                (await callPostmanApi(api_collectionsEndpoint)).collections[1].id
+            ]}};
+            let runner = runnerFactory(runnerOptions);
+            sandbox.stub(global, 'request').callsFake(callPostmanApi);
+
+            let fetchedCollections = await runner.fetchViaApi(runnerOptions.api); 
+            expect(fetchedCollections.length).equals(runnerOptions.api.collection_ids.length);
+            for (index in fetchedCollections){
+                expect(runnerOptions.api.collection_ids[index]).equals(fetchedCollections[index].content.info._postman_id);
+            }    
+        })
+        it('uses minimal required api calls', async function(){
+            const runnerOptions = {api: {key: api_key, 
+                collection_ids: [
+                    (await callPostmanApi(api_collectionsEndpoint)).collections[0].id,
+                    (await callPostmanApi(api_collectionsEndpoint)).collections[1].id
+                ],
+                collection_uids: [
+                    (await callPostmanApi(api_collectionsEndpoint)).collections[0].uid,
+                    (await callPostmanApi(api_collectionsEndpoint)).collections[1].uid
+                ],
+                collection_names: [
+                    (await callPostmanApi(api_yolo)).collection.info.name,
+                    (await callPostmanApi(api_snippets)).collection.info.name
+                ]
+            }};
+            let runner = runnerFactory(runnerOptions);
+            let requestApi = sandbox.stub(global, 'request').callsFake(callPostmanApi);
+            await runner.fetchViaApi(runnerOptions.api);
+            sinon.assert.callCount(requestApi, 7);
+            await runner.fetchViaApi(runnerOptions.api);
+            sinon.assert.callCount(requestApi, 13);
+        })
+        it('returns array of all fetched collection objects', async function(){
+            const runnerOptions = {api: {key: api_key, 
+                collection_ids: [
+                    (await callPostmanApi(api_collectionsEndpoint)).collections[0].id,
+                    (await callPostmanApi(api_collectionsEndpoint)).collections[1].id
+                ],
+                collection_uids: [
+                    (await callPostmanApi(api_collectionsEndpoint)).collections[0].uid,
+                    (await callPostmanApi(api_collectionsEndpoint)).collections[1].uid
+                ],
+                collection_names: [
+                    (await callPostmanApi(api_yolo)).collection.info.name,
+                    (await callPostmanApi(api_snippets)).collection.info.name
+                ]
+            }};
+            let runner = runnerFactory(runnerOptions);
+            sandbox.stub(global, 'request').callsFake(callPostmanApi);
+            const collectionObjects = await runner.fetchViaApi(runnerOptions.api);
+
+            expect(collectionObjects.length).equals(runnerOptions.api.collection_ids.length
+                + runnerOptions.api.collection_uids.length
+                + runnerOptions.api.collection_names.length);
+        })
+        it('re-throws friendly error on request error', async function(){
+            const runnerOptions = {api: {key: api_key, collection_uids: [
+                (await callPostmanApi(api_collectionsEndpoint)).collections[0].uid
+            ]}};
+            let runner = runnerFactory(runnerOptions);
+            sandbox.stub(global, 'request').callsFake(function(){
+                throw new Error('request error');
+            });
+
+            let didThrowError;
+            try{
+                await runner.fetchViaApi(runnerOptions.api)  
+            } catch (error){
+                expect(error).to.be.a('Error');
+                expect(error.message).equals('unable to fetch postman api collections endpoint - cause: Error: request error');
+                didThrowError = true;
+            }
+
+        })
+        it('throws acumulated error msg for all not found resources', async function(){
+            const runnerOptions = {api: {key: api_key, 
+                collection_ids: ['invalid','invalid'],
+                collection_names: ['invalid', 'invalid']
+            }};
+            let runner = runnerFactory(runnerOptions);
+            sandbox.stub(global, 'request').callsFake(callPostmanApi);
+
+            let didThrowError;
+            try{
+            await runner.fetchViaApi(runnerOptions.api)
+            } catch (error){
+                expect(error).to.be.a('Error');
+                expect(error.message).equals('could not find collections with: collection-names: ' 
+                    + runnerOptions.api.collection_names[0]
+                    + ', collection-ids: '
+                    + runnerOptions.api.collection_ids[0]
+                );
+                didThrowError = true;
+            }
+            expect(didThrowError).to.be.true;
+        })
     })
     describe('#fetchViaFileSystem', function(){
         it('fetches single collection')
