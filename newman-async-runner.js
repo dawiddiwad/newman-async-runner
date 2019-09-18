@@ -1,15 +1,15 @@
 class Collection {
 	constructor(content) {
-		this.folders = new Array();
-		this.parseItems = function(content){
-			for (const item of content.item){
-				this.folders.push(item.name);
-				if (item.item){
-					this.parseItems(item)
+		Collection.prototype.parseItems = function(content){
+			for (const eachItem of content.item){
+				this.folders.push(eachItem.name);
+				if (eachItem.item){
+					this.parseItems(eachItem)
 				}	
 			}
 			return [...new Set(this.folders)];
 		}
+		this.folders = [];
 		this.content = content;
 		this.name = content.info.name;
 		this.folders = this.parseItems(this.content);
@@ -42,8 +42,8 @@ module.exports = {
 			if (!options){
 				throw new Error('no options defined for NewmanRunner - unable to generate runs');
 			}
-			this.collectionRuns = new Array();
-			this.collectionRuns.results = new Array();
+			this.collectionRuns = [];
+			this.collectionRuns.results = [];
 			this.options = options;
 			this.pmCollectionsEndpoint = 'https://api.getpostman.com/collections/';
 			this.pmEnvironmentsEndpoint = 'https://api.getpostman.com/environments/';
@@ -64,9 +64,10 @@ module.exports = {
 		}
 
 		async fetchViaApi(apiOptions){
-			let collectionObjects = [];
-			let unmatchedCollections = [];
+			let fetchedObjects = [];
+			let unmatchedObjects = [];
 			const pmCollectionsEndpoint = this.pmCollectionsEndpoint;
+			const pmEnvironmentsEndpoint = this.pmEnvironmentsEndpoint;
 			if (!this.fetchedApiCollections) this.fetchedApiCollections = await fetchCollectionsEndpoint();
 			if (!apiOptions.key) throw new Error('postman api key option is not defined -> please define it as string under api.key');
 			const fetchedApiCollections = this.fetchedApiCollections;
@@ -75,7 +76,7 @@ module.exports = {
 				try{
 					const fetched = await request(pmCollectionsEndpoint + uid + '?apikey=' + apiOptions.key, {json: true});
 					if (!fetched || !fetched.collection) throw new Error("response was: " + fetched);
-					else return collectionObjects.push(new Collection(fetched.collection));
+					else return fetchedObjects.push(new Collection(fetched.collection));
 				}catch(e){
 					throw new Error('unable to fetch collection via postman api' + uid + ' - cause: ' + e);
 				}
@@ -102,7 +103,7 @@ module.exports = {
 						}
 					}
 					if (fetchByNames.found) delete fetchByNames.found; 
-					else unmatchedCollections.push(' collection-names: ' + eachName);
+					else unmatchedObjects.push(' collection-names: ' + eachName);
 
 				}
 			}
@@ -114,7 +115,7 @@ module.exports = {
 						}
 					}
 					if(fetchByIds.found) delete fetchByIds.found;
-					else unmatchedCollections.push(' collection-ids: ' + eachId);
+					else unmatchedObjects.push(' collection-ids: ' + eachId);
 					
 				}
 			}
@@ -122,8 +123,8 @@ module.exports = {
 			if (apiOptions.collection_names) await fetchByNames(apiOptions.collection_names);
 			if (apiOptions.collection_uids) await fetchByUids(apiOptions.collection_uids);
 			if (apiOptions.collection_ids) await fetchByIds(apiOptions.collection_ids);
-			if (unmatchedCollections.length) throw new Error('could not find collections via postman api for:' + [...new Set(unmatchedCollections)].toString())
-			else return collectionObjects;
+			if (unmatchedObjects.length) throw new Error('could not find collections via postman api for:' + [...new Set(unmatchedObjects)].toString())
+			else return fetchedObjects;
 		}
 
 		async fetchViaFileSystem(filePath){
@@ -186,7 +187,7 @@ module.exports = {
 			} else if (!fs.existsSync(dataPath)){
 				throw new Error('iteration data files path: ' + dataPath + ' does not exist or is invalid, unable to generate newman runs');
 			} else if (await fs.lstatSync(dataPath).isDirectory()){
-				let fileObjects = new Array()
+				let fileObjects = [];
 				const files = await fs.readdirSync(dataPath).filter(function (e) {
 					return path.extname(e).toLowerCase() === '.json' || path.extname(e).toLowerCase() === '.csv';
 				});
