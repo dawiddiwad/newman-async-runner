@@ -504,6 +504,10 @@ describe('newman-async-runner [unit]', async function (done) {
                 expect(runnerOptions.api.collection_ids[index]).equals(fetchedCollections[index].content.info._postman_id);
             }    
         })
+        it('fetches all environment_names and returns Collections')
+        it('fetches all environment_uids and returns Collections')
+        it('fetches all environment_ids and returns Collections')
+
         it('uses minimal required api calls', async function(){
             const runnerOptions = {api: {key: api_key, 
                 collection_ids: [
@@ -549,6 +553,7 @@ describe('newman-async-runner [unit]', async function (done) {
                 + runnerOptions.api.collection_uids.length
                 + runnerOptions.api.collection_names.length);
         })
+        it('returns array of all fetched environment objects')
         it('re-throws friendly error on request error', async function(){
             const runnerOptions = {api: {key: api_key, collection_uids: [
                 (await callPostmanApi(api_collectionsEndpoint)).collections[0].uid
@@ -563,12 +568,12 @@ describe('newman-async-runner [unit]', async function (done) {
                 await runner.fetchViaApi(runnerOptions.api)  
             } catch (error){
                 expect(error).to.be.a('Error');
-                expect(error.message).equals('unable to fetch postman api collections endpoint - cause: Error: request error');
+                expect(error.message).equals('unable to fetch postman api endpoint https://api.getpostman.com/collections/ - cause: Error: request error');
                 didThrowError = true;
             }
 
         })
-        it('throws acumulated error msg for all not found resources', async function(){
+        it('throws acumulated error msg for all not found collection resources', async function(){
             const runnerOptions = {api: {key: api_key, 
                 collection_ids: ['invalid', (await callPostmanApi(api_yolo)).collection.info._postman_id],
                 collection_names: [(await callPostmanApi(api_yolo)).collection.info.name, 'invalid']
@@ -590,6 +595,7 @@ describe('newman-async-runner [unit]', async function (done) {
             }
             expect(didThrowError).to.be.true;
         })
+        it('throws acumulated error msg for all not found environment resources')
     })
     describe('#fetchViaFileSystem', function(){
         it('fetches all collection_names and returns Collections')

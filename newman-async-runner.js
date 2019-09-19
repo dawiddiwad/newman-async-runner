@@ -68,11 +68,13 @@ module.exports = {
 			let unmatchedObjects = [];
 			const pmCollectionsEndpoint = this.pmCollectionsEndpoint;
 			const pmEnvironmentsEndpoint = this.pmEnvironmentsEndpoint;
-			if (!this.fetchedApiCollections) this.fetchedApiCollections = await fetchCollectionsEndpoint();
+			if (!this.fetchedApiCollections) this.fetchedApiCollections = await fetchEndpoint(pmCollectionsEndpoint);
+			if (!this.fetchedApiEnvironments) this.fetchedApiEnvironments = await fetchEndpoint(pmEnvironmentsEndpoint);
 			if (!apiOptions.key) throw new Error('postman api key option is not defined -> please define it as string under api.key');
 			const fetchedApiCollections = this.fetchedApiCollections;
+			const fetchedApiEnvironments = this.fetchedApiEnvironments;
 
-			async function fetchAndPush(uid){
+			async function fetchAndPush(uid, object){
 				try{
 					const fetched = await request(pmCollectionsEndpoint + uid + '?apikey=' + apiOptions.key, {json: true});
 					if (!fetched || !fetched.collection) throw new Error("response was: " + fetched);
@@ -81,25 +83,26 @@ module.exports = {
 					throw new Error('unable to fetch collection via postman api' + uid + ' - cause: ' + e);
 				}
 			}
-			async function fetchCollectionsEndpoint(){
+			async function fetchEndpoint(endpoint){
 				try{
-					const fetched = await request(pmCollectionsEndpoint + '?apikey=' + apiOptions.key, {json: true});
-					if (!fetched || !fetched.collections) throw new Error("response was: " + fetched);
-					else return fetched.collections;
+					const fetched = await request(endpoint + '?apikey=' + apiOptions.key, {json: true});
+					if (!fetched || !fetched.collections && !fetched.environments) throw new Error("response was: " + fetched.toString);
+					else if (fetched.collections) return fetched.collections;
+					else if (fetched.environments) return fetched.environments;
 				}catch(e){
-					throw new Error('unable to fetch postman api collections endpoint - cause: ' + e);
+					throw new Error('unable to fetch postman api endpoint ' + endpoint + ' - cause: ' + e);
 				}
 			}
-			async function fetchByUids(uids){
+			async function fetchByUids(uids, objects){
 				for (const uid of uids){
-					await fetchAndPush(uid);
+					await fetchAndPush(uid, objects);
 				}
 			}
-			async function fetchByNames(names){
+			async function fetchByNames(names, objects){
 				for (const eachName of names){
-					for (const eachCollection of fetchedApiCollections){
-						if (eachCollection.name === eachName){
-							fetchByNames.found = await fetchAndPush(eachCollection.uid);
+					for (const eachObject of objects){
+						if (eachObject.name === eachName){
+							fetchByNames.found = await fetchAndPush(eachObject.uid);
 						}
 					}
 					if (fetchByNames.found) delete fetchByNames.found; 
@@ -107,11 +110,11 @@ module.exports = {
 
 				}
 			}
-			async function fetchByIds(ids){
+			async function fetchByIds(ids, objects){
 				for (const eachId of ids){
-					for (const eachCollection of fetchedApiCollections){
-						if (eachCollection.id === eachId){
-							fetchByIds.found = await fetchAndPush(eachCollection.uid);
+					for (const eachObject of objects){
+						if (eachObject.id === eachId){
+							fetchByIds.found = await fetchAndPush(eachObject.uid);
 						}
 					}
 					if(fetchByIds.found) delete fetchByIds.found;
@@ -120,9 +123,9 @@ module.exports = {
 				}
 			}
 
-			if (apiOptions.collection_names) await fetchByNames(apiOptions.collection_names);
-			if (apiOptions.collection_uids) await fetchByUids(apiOptions.collection_uids);
-			if (apiOptions.collection_ids) await fetchByIds(apiOptions.collection_ids);
+			if (apiOptions.collection_names) await fetchByNames(apiOptions.collection_names, fetchedApiCollections);
+			if (apiOptions.collection_uids) await fetchByUids(apiOptions.collection_uids, fetchedApiCollections);
+			if (apiOptions.collection_ids) await fetchByIds(apiOptions.collection_ids, fetchedApiCollections);
 			if (unmatchedObjects.length) throw new Error('could not find collections via postman api for:' + [...new Set(unmatchedObjects)].toString())
 			else return fetchedObjects;
 		}
