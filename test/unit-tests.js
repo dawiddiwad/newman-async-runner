@@ -511,8 +511,8 @@ describe('newman-async-runner [unit]', async function (done) {
         let SingleEnvironmentUid;
         before('before #fetchViaApi() tests', async function(){
             apiKey = await getApiKey();
-            SingleCollectionUid = '8804262-13f4c16b-dcbb-4440-8198-d60f9061eaff';
-            SingleEnvironmentUid = '8804262-7b563f42-8bed-4ed7-aba7-7eca1e0d6230';
+            SingleCollectionUid = '5022740-bd0d91a1-56f1-4d8b-9392-7c001f17ee7b';
+            SingleEnvironmentUid = '5022740-dda37fb8-213d-4963-943d-dfb8cd0f7f61';
         })
         it('fetches single collection', async function(){
             const collectionPath = pmCollectionsEndpoint + SingleCollectionUid + apiKey;
