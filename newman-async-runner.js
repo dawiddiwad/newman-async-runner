@@ -46,13 +46,20 @@ module.exports = {
 			this.pmEnvironmentsEndpoint = 'https://api.getpostman.com/environments/';
 		}
 
+		logMsg(message) {
+			if (!this.options.consoleLogDisabled){
+				console.log(message);
+			}
+			else return false;
+		}
+
 		setupFolders() {
 			if (!this.options || !this.options.folders || !this.options.folders.collections) {
 				throw Error('undefined collections path in {runnerOptions.folders} -> Please define at least that :)');
 			}
 			if (!this.options.folders.reports) {
 				this.options.folders.reports = './reports/'
-				console.log('no reports folder set, will put reports into ' + this.options.folders.reports);
+				this.logMsg('no reports folder set, will put reports into ' + this.options.folders.reports);
 			}
 		}
 
@@ -177,7 +184,7 @@ module.exports = {
 				}
 				result = result.replace(anonymizeFilter, '***');
 				await fs.writeFileSync(file, result, 'utf8')
-				console.log('anonymized report: ' + file);
+				this.logMsg('anonymized report: ' + file);
 			}
 
 			try {
@@ -264,7 +271,7 @@ module.exports = {
 					}
 				}
 			}
-			console.log('TOTAL ASYNC RUNS: ' + this.collectionRuns.length + '\n');
+			this.logMsg('TOTAL ASYNC RUNS: ' + this.collectionRuns.length + '\n');
 		}
 
 		async runTests() {
@@ -272,7 +279,7 @@ module.exports = {
 			await this.setupCollections();
 			await async.parallel(this.collectionRuns);
 			await this.anonymizeReportsPassword();
-			console.log('all test runs completed');
+			this.logMsg('all test runs completed');
 			return this.collectionRuns.results;
 		}
 	}

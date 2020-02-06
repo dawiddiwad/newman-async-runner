@@ -30,6 +30,49 @@ describe('newman-async-runner [unit]', async function (done) {
         _nar = runnerFactory();
         resetOptions();
     })
+    describe("#logMsg()", function(){
+        const testMsg = "console log msg"
+        let options = optionsFactory();
+        let runner;
+        let consoleSpy;
+
+        beforeEach(function(){
+            runner = runnerFactory();
+            sandbox = sinon.createSandbox();
+            consoleSpy = sandbox.spy(console, 'log');
+        })
+
+        afterEach(function(){
+            sandbox.restore();
+        })
+
+        it('does not log message to console when option is disabled', function(){
+            options.consoleLogDisabled = true;
+            runner = new runner.NewmanRunner(options);
+            runner.logMsg(testMsg);
+
+            sinon.assert.notCalled(consoleSpy);
+        })
+
+        it('logs message to console when option is enabled', function(){
+            options.consoleLogDisabled = false;
+            runner = new runner.NewmanRunner(options);
+            runner.logMsg(testMsg);
+
+            sinon.assert.calledOnce(consoleSpy);
+            sinon.assert.calledWithExactly(consoleSpy, testMsg);
+        })
+
+        it('logs message to console when options is not provided', function(){
+            options.consoleLogDisabled = undefined;
+            runner = new runner.NewmanRunner(options);
+            runner.logMsg(testMsg);
+
+            sinon.assert.calledOnce(consoleSpy);
+            sinon.assert.calledWithExactly(consoleSpy, testMsg);
+        })
+    })
+
     describe('#setupFolders()', function () {
         it('throws error when no collections folder is set in runner options', async function () {
             let options = new Object();
