@@ -165,6 +165,16 @@ module.exports = {
 			}
 		}
 
+		getExtraIterations() {
+			if (!this.options || !this.options.extra_iterations){
+				return [undefined];
+			} else if (Array.isArray(this.options.extra_iterations)){
+					return this.options.extra_iterations;
+			} else {
+				throw new Error(`options.extra_iterations: \n ${this.options.extra_iterations} \n...is not an array - please see documentation on using these options`);
+			}
+		}
+
 		async anonymizeReportsPassword() {
 			if (!this.options.anonymizeFilter) {
 				return;
@@ -191,7 +201,7 @@ module.exports = {
 			} catch (e) { throw new Error('could not open reports folder, reports were not anonymized, error occured: ' + e) }
 		}
 
-		prepareRunOptions(_collection, _environment, _folder, _data) {
+		prepareRunOptions(_collection, _environment, _folder, _data, _extraIteration) {
 
 			let options = this.options.newmanOptions ? JSON.parse(JSON.stringify(this.options.newmanOptions )) : 
 				new Object();
@@ -215,6 +225,7 @@ module.exports = {
 				{
 					htmlfull: {
 						export: (this.options.folders.reports ? this.options.folders.reports : "")
+							+ (_extraIteration ? (_extraIteration.name + "-") : "")
 							+ (_collection ? _collection.name + "-" : "no_collection")
 							+ (_environment ? _environment.name + "-" : "")
 							+ _folder
@@ -243,6 +254,24 @@ module.exports = {
 			if (!options.environment) {
 				delete options.environment
 			}
+			if (_environment && _extraIteration) {
+				if(Object.keys(_extraIteration).length > 0 && !_environment.values){
+					_environment.values = [];
+				}
+				for (const property in _extraIteration.variables) {
+					const newmanEnvVariable = {
+						"key" : property,
+						"value" : _extraIteration.variables[property],
+						"enabled" : true
+					}
+					_environment.values.push(newmanEnvVariable);
+					_environment.values.forEach((element, index, array) => {
+						if (element.key === newmanEnvVariable.key){
+							array[index] = newmanEnvVariable;
+						}
+					});
+				}
+			}
 
 			var newmanAsyncRunnerSelf = this;
 			this.collectionRuns.push(function (done) {
@@ -253,14 +282,16 @@ module.exports = {
 		}
 
 		async setupCollections() {
-			for (let data of await this.getFiles()) {
-				for (let collection of await this.getCollections()) {
-					for (let environment of await this.getEnvironments()) {
-						if (this.options.parallelFolderRuns || this.options.specific_collection_items_to_run) {
-							for (let folder of collection.folders) {
-								this.prepareRunOptions(collection, environment, folder, data);
-							}
-						} else { this.prepareRunOptions(collection, environment, "all_folders", data); }
+			for (let ExtraIteration of this.getExtraIterations()){
+				for (let data of await this.getFiles()) {
+					for (let collection of await this.getCollections()) {
+						for (let environment of await this.getEnvironments()) {
+							if (this.options.parallelFolderRuns || this.options.specific_collection_items_to_run) {
+								for (let folder of collection.folders) {
+									this.prepareRunOptions(collection, environment, folder, data, ExtraIteration);
+								}
+							} else { this.prepareRunOptions(collection, environment, "all_folders", data, ExtraIteration); }
+						}
 					}
 				}
 			}

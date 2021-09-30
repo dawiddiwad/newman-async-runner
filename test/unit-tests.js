@@ -1,3 +1,5 @@
+const { runnerFactory, collectionFactory } = require('./test-utils');
+
 import ('./test-utils');
 
 describe('newman-async-runner [unit]', async function (done) {
@@ -433,6 +435,46 @@ describe('newman-async-runner [unit]', async function (done) {
                 expect(error.message).to.include('undefined collection for newman run options')
             }
         })
+        it ('sets extra_iterations', async function () {
+            let options = optionsFactory();
+            options.extra_iterations = [
+                {
+                    'name' : 'admin',
+                    'variables' : {
+                        'username':'deledated.admin@ipfdigital.com.uat',
+                        'password':'test123!@#$'
+                    } 
+                },
+                {
+                    'name' : 'CC rep',
+                    'variables' : {
+                        'username':'slaby.sprzedawca@ipfdigital.com.uat',
+                        'password':'test123!@#$'
+                    } 
+                }
+            ];
+            delete options.specific_collection_items_to_run;
+
+            let collections = collectionFactory(1);
+            let environments = environmentFactory(1);
+            let dataFiles = dataFactory(1, 'csv');
+
+            let NAR = runnerFactory();
+            NAR = new NAR.NewmanRunner(options);
+
+            let collectionRunsSpy = sandbox.spy(NAR.collectionRuns, 'push');
+            let runsSpy = sandbox.spy(runnerFactory().newman, 'run');
+            await NAR.prepareRunOptions(collections[0], environments[0], collections[0].folders[0], dataFiles[0], options.extra_iterations[0]);
+            sinon.assert.calledOnce(collectionRunsSpy);
+
+            await async.parallel(NAR.collectionRuns, function () { });
+            expect(runsSpy.args[0][0].collection).to.equal(collections[0].content);
+            expect(runsSpy.args[0][0].environment).to.equal(environments[0].content);
+            expect(runsSpy.args[0][0].iterationData).to.equal(dataFiles[0].address);
+            expect(environments[0].values[0].password).to.equal(options.extra_iterations[0].password);
+            expect(environments[0].values[0].username).to.equal(options.extra_iterations[0].username);
+            console.log(collectionRunsSpy);
+        })
         it('puts correct data for data runs')
         it('sets proper reporter template')
         it('gives proper name to test report')
@@ -511,8 +553,8 @@ describe('newman-async-runner [unit]', async function (done) {
         let SingleEnvironmentUid;
         before('before #fetchViaApi() tests', async function(){
             apiKey = await getApiKey();
-            SingleCollectionUid = '5022740-bd0d91a1-56f1-4d8b-9392-7c001f17ee7b';
-            SingleEnvironmentUid = '5022740-dda37fb8-213d-4963-943d-dfb8cd0f7f61';
+            SingleCollectionUid = '5022740-10ca1264-c6d1-4621-8688-12854fc9e2e8';
+            SingleEnvironmentUid = '5022740-6a06947e-d032-4fc8-a6eb-e7ee03238c12';
         })
         it('fetches single collection', async function(){
             const collectionPath = pmCollectionsEndpoint + SingleCollectionUid + apiKey;

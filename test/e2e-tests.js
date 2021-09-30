@@ -87,6 +87,45 @@ describe('newman-async-runner [e2e]', async function () {
             let reportFiles = await getReportsFrom(options.folders.reports);
             expect(reportFiles.length).to.equal(1);
         })
+        it('runs for all collections & environments & users', async function () {
+            let options = optionsFactory();
+            options.extra_iterations = [
+                {
+                    'name' : 'admin',
+                    'variables' : {
+                        'username':'deledated.admin@ipfdigital.com.uat',
+                        'password':'test123!@#$'
+                    } 
+                },
+                {
+                    'name' : 'CC rep',
+                    'variables' : {
+                        'username':'slaby.sprzedawca@ipfdigital.com.uat',
+                        'password':'test123!@#$'
+                    } 
+                }
+            ];
+            let _mocked = runnerFactory();
+            await copyTest.environments(collectionsAmount, options);
+            delete options.specific_collection_items_to_run;
+            delete options.parallelFolderRuns;
+
+            let _runs = sandbox.spy(_mocked.newman, 'run');
+            let runner = new _mocked.NewmanRunner(options);
+            const results = await runner.runTests();
+            for (eachResult of results){
+                expect(eachResult.summary.run.executions).not.to.be.empty;
+            }
+            for (let i = 0, c = 0, e = 0; i < collectionsAmount * collectionsAmount; i++ , e++) {
+                expect(_runs.args[i][0].collection.info.name).to.equal('yolo');
+                expect(_runs.args[i][0].environment.name).to.equal('UAT');
+                expect(_runs.args[i][0].folder).to.be.undefined;
+                if ((i + 1) % collectionsAmount == 0) { c++; e = -1 }
+            }
+
+            let reportFiles = await getReportsFrom(options.folders.reports);
+            expect(_runs.args.length).to.equal(collectionsAmount**2 * options.extra_iterations.length);
+        })
         it('runs for selected folders on all collections & environments', async function () {
             let options = optionsFactory();
             let _mocked = runnerFactory();
@@ -260,8 +299,8 @@ describe('newman-async-runner [e2e]', async function () {
         let SingleEnvironmentUid;
         before('before api runs tests', async function(){
             apiKey = await getApiKey();
-            SingleCollectionUid = '5022740-bd0d91a1-56f1-4d8b-9392-7c001f17ee7b';
-            SingleEnvironmentUid = '5022740-dda37fb8-213d-4963-943d-dfb8cd0f7f61';
+            SingleCollectionUid = '5022740-10ca1264-c6d1-4621-8688-12854fc9e2e8';
+            SingleEnvironmentUid = '5022740-6a06947e-d032-4fc8-a6eb-e7ee03238c12';
         })
         it('runs for single collection and environment fetched via postman api', async function(){
             await cleanTestDirectory();
@@ -279,8 +318,8 @@ describe('newman-async-runner [e2e]', async function () {
             for (eachResult of results){
                 expect(eachResult.summary.run.executions).not.to.be.empty;
             }
-            expect(results[0].summary.collection.name).equals('snippets');
-            expect(results[0].summary.environment.name).equals('SIT');
+            expect(results[0].summary.collection.name).equals('yolo');
+            expect(results[0].summary.environment.name).equals('UAT');
             await cleanTestDirectory();
         })
         it('runs for all collections and environments fetched via postman api', async function(){
