@@ -299,8 +299,8 @@ describe('newman-async-runner [e2e]', async function () {
         let SingleEnvironmentUid;
         before('before api runs tests', async function(){
             apiKey = await getApiKey();
-            SingleCollectionUid = '5022740-10ca1264-c6d1-4621-8688-12854fc9e2e8';
-            SingleEnvironmentUid = '5022740-6a06947e-d032-4fc8-a6eb-e7ee03238c12';
+            SingleCollectionUid = '8804262-13f4c16b-dcbb-4440-8198-d60f9061eaff';
+            SingleEnvironmentUid = '8804262-d98686c9-d6b6-4be1-b0cb-a2adbb3aa4c4';
         })
         it('runs for single collection and environment fetched via postman api', async function(){
             await cleanTestDirectory();
@@ -318,8 +318,8 @@ describe('newman-async-runner [e2e]', async function () {
             for (eachResult of results){
                 expect(eachResult.summary.run.executions).not.to.be.empty;
             }
-            expect(results[0].summary.collection.name).equals('yolo');
-            expect(results[0].summary.environment.name).equals('UAT');
+            expect(results[0].summary.collection.name).equals('snippets');
+            expect(results[0].summary.environment.name).equals('SIT');
             await cleanTestDirectory();
         })
         it('runs for all collections and environments fetched via postman api', async function(){
