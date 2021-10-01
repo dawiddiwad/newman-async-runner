@@ -166,13 +166,25 @@ module.exports = {
 		}
 
 		getExtraIterations() {
+			const checkFormat = function(extraIterations){
+				if (Array.isArray(extraIterations) && extraIterations.length > 0) {
+					for (const index in extraIterations){
+						const element = extraIterations[index];
+						if (!element.name || !element.variables || typeof element.variables != 'object' || Object.keys(element).length != 2){
+							throw new Error(`${JSON.stringify(extraIterations)}\n...options.extra_iterations data has incorrect format - please see documentation on using extra_iterations`);
+						}
+					}
+					return extraIterations;
+				} else {
+					throw new Error(`${JSON.stringify(extraIterations)}\n...options.extra_iterations is either not an array or is an empty array - please see documentation on using extra_iterations`);
+				}
+			}
+
 			if (!this.options || !this.options.extra_iterations){
 				return [undefined];
-			} else if (Array.isArray(this.options.extra_iterations)){
-					return this.options.extra_iterations;
 			} else {
-				throw new Error(`options.extra_iterations: \n ${this.options.extra_iterations} \n...is not an array - please see documentation on using these options`);
-			}
+				return checkFormat(this.options.extra_iterations);
+			} 
 		}
 
 		async anonymizeReportsPassword() {

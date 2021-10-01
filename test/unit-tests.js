@@ -1,4 +1,4 @@
-const { runnerFactory, collectionFactory } = require('./test-utils');
+const { runnerFactory, collectionFactory, optionsFactory, expect } = require('./test-utils');
 
 import ('./test-utils');
 
@@ -480,6 +480,100 @@ describe('newman-async-runner [unit]', async function (done) {
         it('puts correct data for data runs')
         it('sets proper reporter template')
         it('gives proper name to test report')
+    })
+    describe('#getExtraIterations', function(){
+        it('parses extra iterations as a array', function () {
+            let options = optionsFactory();
+            options.extra_iterations = [
+                {
+                    'name' : 'admin',
+                    'variables' : {
+                        'username':'deledated.admin@ipfdigital.com.uat',
+                        'password':'test123!@#$'
+                    } 
+                },
+                {
+                    'name' : 'CC rep',
+                    'variables' : {
+                        'username':'slaby.sprzedawca@ipfdigital.com.uat',
+                        'password':'test123!@#$'
+                    } 
+                }
+            ];
+            let runner = runnerFactory();
+            runner = new runner.NewmanRunner(options);
+
+            const extraIterations = runner.getExtraIterations();
+
+            expect(extraIterations).to.deep.equal(options.extra_iterations);
+        })
+        it('returns an array with a sinlge undefined element when there are no extra iterations', function () {
+            let options = optionsFactory();
+            let runner = runnerFactory();
+            runner = new runner.NewmanRunner(options);
+
+            const extraIterations = runner.getExtraIterations();
+
+            expect(extraIterations).to.deep.equal([undefined]);
+        })
+        it('throws error when extra iterations are in wrong format', function () {
+            let options = optionsFactory();
+            options.extra_iterations = [
+                {
+                    'names' : 'admin',
+                    'variables' : {
+                        'username':'deledated.admin@ipfdigital.com.uat',
+                        'password':'test123!@#$'
+                    } 
+                },
+                {
+                    'randomKey' : 1234,
+                    'name' : 'CC rep',
+                    'variable' : {
+                        'username':'slaby.sprzedawca@ipfdigital.com.uat',
+                        'password':'test123!@#$'
+                    } 
+                }
+            ];
+            let runner = runnerFactory();
+            runner = new runner.NewmanRunner(options);
+            
+            try {
+                runner.getExtraIterations();
+            } catch (error) {
+                expect(error.message).to.include('...options.extra_iterations data has incorrect format - please see documentation on using extra_iterations');
+                return
+            }
+            expect.fail('does not throw error when extra iterations are in wrong format');
+        })
+        it('throws error when extra iterations are not an array', function () {
+            let options = optionsFactory();
+            options.extra_iterations = {};
+            let runner = runnerFactory();
+            runner = new runner.NewmanRunner(options);
+            
+            try {
+                runner.getExtraIterations();
+            } catch (error) {
+                expect(error.message).to.include('...options.extra_iterations is either not an array or is an empty array - please see documentation on using extra_iterations');
+                return
+            }
+            expect.fail('does not throw error when extra iterations are in wrong format');
+        })
+        it('throws error when extra iterations are empty array', function () {
+            let options = optionsFactory();
+            options.extra_iterations = [];
+            let runner = runnerFactory();
+            runner = new runner.NewmanRunner(options);
+            
+            try {
+                runner.getExtraIterations();
+            } catch (error) {
+                expect(error.message).to.include('...options.extra_iterations is either not an array or is an empty array - please see documentation on using extra_iterations');
+                return
+            }
+            expect.fail('does not throw error when extra iterations are in wrong format');
+        })
     })
     describe('#getFiles', function(){
         let intialAmountOfFiles = 3;
