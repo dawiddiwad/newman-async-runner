@@ -457,6 +457,7 @@ describe('newman-async-runner [unit]', async function (done) {
 
             let collections = collectionFactory(1);
             let environments = environmentFactory(1);
+            environments[0].content = {};
             let dataFiles = dataFactory(1, 'csv');
 
             let NAR = runnerFactory();
@@ -471,8 +472,9 @@ describe('newman-async-runner [unit]', async function (done) {
             expect(runsSpy.args[0][0].collection).to.equal(collections[0].content);
             expect(runsSpy.args[0][0].environment).to.equal(environments[0].content);
             expect(runsSpy.args[0][0].iterationData).to.equal(dataFiles[0].address);
-            expect(environments[0].values[0].password).to.equal(options.extra_iterations[0].password);
-            expect(environments[0].values[0].username).to.equal(options.extra_iterations[0].username);
+            expect(environments[0].content.values[0].value).to.equal(options.extra_iterations[0].variables.username);
+            expect(environments[0].content.values[1].value).to.equal(options.extra_iterations[0].variables.password);
+            expect(environments[0].content.values.length).to.equal(2);
             console.log(collectionRunsSpy);
         })
         it('puts correct data for data runs')

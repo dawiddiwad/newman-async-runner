@@ -206,6 +206,30 @@ module.exports = {
 			let options = this.options.newmanOptions ? JSON.parse(JSON.stringify(this.options.newmanOptions )) : 
 				new Object();
 
+			if (_environment && _extraIteration) {
+				if(Object.keys(_extraIteration).length > 0 && !_environment.content.values){
+					_environment.content.values = [];
+				}
+				let newmanEnvVariables = [];
+				for (const property in _extraIteration.variables) {
+					newmanEnvVariables.push({
+						"key" : property,
+						"value" : _extraIteration.variables[property],
+						"enabled" : true
+					});
+				}
+				newmanEnvVariables.forEach(element => {
+					_environment.content.values.push(element);
+				});
+				_environment.content.values.forEach((element, index, array) => {
+					for (const variable in newmanEnvVariables){
+						if (variable.key === element.key){
+							array[index] = variable;
+						}
+					}
+				});
+			}
+
 			options.collection = options.collection ? options.collection :
 				(_collection ? _collection.content : undefined);
 
@@ -253,24 +277,6 @@ module.exports = {
 			}
 			if (!options.environment) {
 				delete options.environment
-			}
-			if (_environment && _extraIteration) {
-				if(Object.keys(_extraIteration).length > 0 && !_environment.values){
-					_environment.values = [];
-				}
-				for (const property in _extraIteration.variables) {
-					const newmanEnvVariable = {
-						"key" : property,
-						"value" : _extraIteration.variables[property],
-						"enabled" : true
-					}
-					_environment.values.push(newmanEnvVariable);
-					_environment.values.forEach((element, index, array) => {
-						if (element.key === newmanEnvVariable.key){
-							array[index] = newmanEnvVariable;
-						}
-					});
-				}
 			}
 
 			var newmanAsyncRunnerSelf = this;
